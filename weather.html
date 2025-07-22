@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Weather Center | MeteoVeritas</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="/assets/css/styles.css">
+</head>
+<body>
+<header class="mv-header">
+  <a class="mv-logo" href="/"><img src="/assets/img/placeholder-logo.svg" alt="MeteoVeritas logo" width="160" height="48"></a>
+  <nav class="mv-nav">
+    <a href="/weather.html" class="active">Weather Center</a>
+    <a href="/wbgt.html">WBGT Center</a>
+    <a href="/consulting.html">Consulting</a>
+    <a href="/contact.html" class="mv-cta-btn">Request Services</a>
+  </nav>
+</header>
+
+<main class="mv-weather-wrapper">
+  <h1>Live Weather Center</h1>
+  <p>Enter a U.S. location (city or ZIP). We’ll pull the latest NWS forecast &amp; current conditions.</p>
+  <form id="mv-weather-search">
+    <input type="text" id="mv-location-input" placeholder="e.g., Dunedin, FL or 34698">
+    <button type="submit" class="mv-btn-primary">Get Weather</button>
+  </form>
+
+  <div id="mv-weather-results" class="mv-weather-results">
+    <!-- JS injects forecast cards here -->
+  </div>
+
+  <h2>Radar (static placeholder)</h2>
+  <p>Animated radar coming soon.</p>
+  <img src="https://placehold.co/600x300?text=Radar+Goes+Here" alt="Radar placeholder">
+</main>
+
+<footer class="mv-footer">
+  <p>Data: National Weather Service (NWS). Not for life/critical decision use.</p>
+  <p>© <span id="mv-year"></span> MeteoVeritas.</p>
+</footer>
+<script src="/assets/js/main.js"></script>
+</body>
+</html>

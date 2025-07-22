@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="96" viewBox="0 0 320 96" role="img" aria-label="MeteoVeritas">
+  <defs>
+    <linearGradient id="mvGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00A8B5"/>
+      <stop offset="50%" stop-color="#D041A3"/>
+      <stop offset="100%" stop-color="#FF8A00"/>
+    </linearGradient>
+  </defs>
+  <rect width="320" height="96" rx="8" fill="#1E2233"/>
+  <text x="48" y="60" font-family="Inter, sans-serif" font-size="36" font-weight="700" fill="url(#mvGrad)">MeteoVeritas</text>
+  <polygon points="20,20 28,36 12,36" fill="#FF8A00"/>
+  <line x1="20" y1="36" x2="20" y2="72" stroke="#D041A3" stroke-width="4" stroke-linecap="round"/>
+  <polyline points="12,72 20,64 28,72" fill="none" stroke="#00A8B5" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

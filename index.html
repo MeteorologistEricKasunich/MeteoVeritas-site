@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MeteoVeritas | Actionable Weather Intelligence & Climate Risk</title>
+<meta name="description" content="MeteoVeritas provides data-driven weather consulting, WBGT heat stress tools, forensic meteorology, and live weather data.">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="/assets/css/styles.css">
+</head>
+<body>
+<header class="mv-header">
+  <a class="mv-logo" href="/"><img src="/assets/img/placeholder-logo.svg" alt="MeteoVeritas logo" width="160" height="48"></a>
+  <nav class="mv-nav">
+    <a href="/weather.html">Weather Center</a>
+    <a href="/wbgt.html">WBGT Center</a>
+    <a href="/consulting.html">Consulting</a>
+    <a href="/contact.html" class="mv-cta-btn">Request Services</a>
+  </nav>
+</header>
+
+<section class="mv-hero">
+  <h1>Actionable Weather Intelligence &amp; Climate Risk</h1>
+  <p>Driven by data. Grounded in truth.</p>
+  <div class="mv-hero-ctas">
+    <a class="mv-btn-primary" href="/contact.html">Request a Consultation</a>
+    <a class="mv-btn-secondary" href="/weather.html">View Live Weather</a>
+    <a class="mv-btn-secondary" href="/wbgt.html">Get WBGT For My Location</a>
+  </div>
+</section>
+
+<section class="mv-badges">
+  <ul>
+    <li>Broadcast Meteorologist</li>
+    <li>USAF Weather Veteran</li>
+    <li>College Instructor</li>
+    <li>CCM Candidate</li>
+  </ul>
+</section>
+
+<section class="mv-panels">
+  <article>
+    <h2>Weather Center</h2>
+    <p>Search any U.S. location for current conditions, forecast, radar &amp; satellite.</p>
+    <a href="/weather.html" class="mv-card-btn">Open</a>
+  </article>
+  <article>
+    <h2>WBGT Center</h2>
+    <p>Heat stress risk for athletes, outdoor work &amp; events. Enter a location (coming soon!).</p>
+    <a href="/wbgt.html" class="mv-card-btn">Preview</a>
+  </article>
+  <article>
+    <h2>Consulting &amp; Forensic Services</h2>
+    <p>Expert weather analysis for legal, insurance, real estate &amp; events.</p>
+    <a href="/consulting.html" class="mv-card-btn">Learn More</a>
+  </article>
+</section>
+
+<footer class="mv-footer">
+  <p>© <span id="mv-year"></span> MeteoVeritas. All rights reserved.</p>
+</footer>
+
+<!-- Hidden Netlify 'mv-lead' form so quick leads work from any CTA -->
+<form name="mv-lead" method="POST" data-netlify="true" netlify-honeypot="bot-field" hidden>
+  <input type="hidden" name="form-name" value="mv-lead">
+  <p class="hidden"><label>Don’t fill this out: <input name="bot-field"></label></p>
+  <input type="text" name="name" />
+  <input type="email" name="email" />
+  <textarea name="message"></textarea>
+</form>
+
+<script src="/assets/js/main.js"></script>
+</body>
+</html>

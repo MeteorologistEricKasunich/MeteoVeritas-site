@@ -1,0 +1,14 @@
+# MeteoVeritas Netlify configuration
+# (We can expand this later for build commands, redirects, headers, functions.)
+[build]
+  publish = "/"
+  command = ""
+
+# Example: Custom headers (enable when ready)
+#[[headers]]
+#  for = "/*"
+#  [headers.values]
+#    X-Frame-Options = "SAMEORIGIN"
+
+# Forms settings are mostly automatic when parsed from HTML,
+# but we can add spam filters & notifications in the Netlify UI.

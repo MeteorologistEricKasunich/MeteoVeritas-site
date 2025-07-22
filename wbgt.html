@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>WBGT Center | MeteoVeritas</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="/assets/css/styles.css">
+</head>
+<body>
+<header class="mv-header">
+  <a class="mv-logo" href="/"><img src="/assets/img/placeholder-logo.svg" alt="MeteoVeritas logo" width="160" height="48"></a>
+  <nav class="mv-nav">
+    <a href="/weather.html">Weather Center</a>
+    <a href="/wbgt.html" class="active">WBGT Center</a>
+    <a href="/consulting.html">Consulting</a>
+    <a href="/contact.html" class="mv-cta-btn">Request Services</a>
+  </nav>
+</header>
+
+<main class="mv-wbgt-wrapper">
+  <h1>Wet Bulb Globe Temperature (WBGT)</h1>
+  <p>WBGT is the gold‑standard heat stress index for outdoor work &amp; athletics. Enter a location below (feature coming soon). For now, use the contact form to request a custom WBGT forecast.</p>
+
+  <form id="mv-wbgt-search">
+    <input type="text" id="mv-wbgt-location" placeholder="City, State or Lat, Lon">
+    <button type="submit" class="mv-btn-primary" disabled>Coming Soon</button>
+  </form>
+
+  <section class="mv-wbgt-info">
+    <h2>WBGT Risk Bands</h2>
+    <ul class="mv-wbgt-bands">
+      <li><span class="band band-green"></span> Low</li>
+      <li><span class="band band-yellow"></span> Moderate</li>
+      <li><span class="band band-orange"></span> High</li>
+      <li><span class="band band-red"></span> Very High</li>
+      <li><span class="band band-purple"></span> Extreme</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="mv-footer">
+  <p>© <span id="mv-year"></span> MeteoVeritas.</p>
+</footer>
+<script src="/assets/js/main.js"></script>
+</body>
+</html>

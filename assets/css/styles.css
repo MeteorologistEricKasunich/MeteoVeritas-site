@@ -1,0 +1,163 @@
+/* MeteoVeritas starter styles */
+:root {
+  --mv-teal: #00A8B5;
+  --mv-magenta: #D041A3;
+  --mv-orange: #FF8A00;
+  --mv-slate: #1E2233;
+  --mv-cloud: #F5F7FA;
+  --mv-white: #FFFFFF;
+  --mv-radius: 6px;
+  --mv-max-width: 1200px;
+}
+
+*{box-sizing:border-box;}
+body {
+  margin:0;
+  font-family:system-ui,"Inter",sans-serif;
+  color:var(--mv-slate);
+  background:var(--mv-cloud);
+  line-height:1.4;
+}
+
+.mv-header {
+  background:var(--mv-slate);
+  color:var(--mv-white);
+  padding:0.75rem 1rem;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.mv-header img{display:block;}
+
+.mv-nav a {
+  color:var(--mv-white);
+  margin-left:1rem;
+  text-decoration:none;
+  font-weight:600;
+}
+.mv-nav a.active{text-decoration:underline;}
+.mv-cta-btn {
+  padding:0.4rem 0.8rem;
+  background:var(--mv-magenta);
+  border-radius:var(--mv-radius);
+  color:var(--mv-white);
+}
+
+.mv-hero {
+  text-align:center;
+  padding:5rem 1rem;
+  background:linear-gradient(135deg,var(--mv-teal),var(--mv-magenta));
+  color:var(--mv-white);
+}
+.mv-hero-ctas a {
+  margin:0.5rem;
+  display:inline-block;
+}
+
+.mv-btn-primary {
+  background:var(--mv-orange);
+  color:var(--mv-slate);
+  padding:0.75rem 1.5rem;
+  border-radius:var(--mv-radius);
+  text-decoration:none;
+  font-weight:bold;
+}
+.mv-btn-secondary {
+  border:2px solid var(--mv-white);
+  color:var(--mv-white);
+  padding:0.75rem 1.5rem;
+  border-radius:var(--mv-radius);
+  text-decoration:none;
+  font-weight:bold;
+}
+
+.mv-badges {
+  max-width:var(--mv-max-width);
+  margin:0 auto;
+  padding:1.5rem;
+  text-align:center;
+}
+.mv-badges ul{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:1rem;
+  list-style:none;
+  padding:0;
+  margin:0;
+}
+.mv-badges li{
+  background:var(--mv-white);
+  padding:0.5rem 1rem;
+  border-radius:var(--mv-radius);
+  box-shadow:0 1px 3px rgba(0,0,0,.1);
+  font-size:0.95rem;
+}
+
+.mv-panels {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:1.5rem;
+  padding:2rem;
+  max-width:var(--mv-max-width);
+  margin:0 auto;
+}
+.mv-panels article {
+  background:var(--mv-white);
+  padding:1.5rem;
+  border-radius:var(--mv-radius);
+  box-shadow:0 2px 6px rgba(0,0,0,.08);
+  text-align:center;
+}
+.mv-card-btn {
+  display:inline-block;
+  margin-top:1rem;
+  padding:0.5rem 1rem;
+  background:var(--mv-teal);
+  color:var(--mv-white);
+  border-radius:var(--mv-radius);
+  text-decoration:none;
+  font-weight:600;
+}
+
+.mv-contact-wrapper,
+.mv-weather-wrapper,
+.mv-wbgt-wrapper,
+.mv-consulting-wrapper {
+  max-width:var(--mv-max-width);
+  margin:0 auto;
+  padding:2rem 1rem;
+}
+
+.mv-contact-form label {
+  display:block;
+  margin:0.75rem 0;
+}
+.mv-contact-form input,
+.mv-contact-form select,
+.mv-contact-form textarea {
+  width:100%;
+  padding:0.5rem;
+  margin-top:0.25rem;
+  border:1px solid #bbb;
+  border-radius:var(--mv-radius);
+  font-size:1rem;
+}
+
+.mv-footer {
+  text-align:center;
+  padding:2rem 1rem;
+  background:var(--mv-slate);
+  color:var(--mv-white);
+  margin-top:4rem;
+}
+
+/* WBGT legend bands */
+.mv-wbgt-bands{list-style:none;padding:0;margin:1rem 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:0.5rem;}
+.mv-wbgt-bands li{display:flex;align-items:center;gap:0.5rem;}
+.band{display:inline-block;width:20px;height:20px;border-radius:var(--mv-radius);}
+.band-green{background:#00C853;}
+.band-yellow{background:#FFEB3B;}
+.band-orange{background:#FF9800;}
+.band-red{background:#F44336;}
+.band-purple{background:#9C27B0;}

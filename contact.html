@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Contact | MeteoVeritas</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="/assets/css/styles.css">
+</head>
+<body>
+<header class="mv-header">
+  <a class="mv-logo" href="/"><img src="/assets/img/placeholder-logo.svg" alt="MeteoVeritas logo" width="160" height="48"></a>
+  <nav class="mv-nav">
+    <a href="/weather.html">Weather Center</a>
+    <a href="/wbgt.html">WBGT Center</a>
+    <a href="/consulting.html">Consulting</a>
+  </nav>
+</header>
+
+<main class="mv-contact-wrapper">
+  <h1>Request Services / Ask a Question</h1>
+  <p>Tell us what you need—legal case weather, storm damage drone survey, WBGT data, or custom forecast support.</p>
+
+  <form name="mv-contact" method="POST" data-netlify="true" netlify-honeypot="bot-field" class="mv-contact-form">
+    <input type="hidden" name="form-name" value="mv-contact">
+    <p class="hidden"><label>Don’t fill this out: <input name="bot-field"></label></p>
+
+    <label>Your Name*<br><input type="text" name="name" required></label>
+    <label>Email*<br><input type="email" name="email" required></label>
+    <label>Organization<br><input type="text" name="org"></label>
+    <label>Service Needed<br>
+      <select name="service">
+        <option value="">Select…</option>
+        <option>Forensic / Legal</option>
+        <option>Insurance Claim</option>
+        <option>Real Estate Climate Risk</option>
+        <option>Event Forecast Support</option>
+        <option>Drone Damage Survey</option>
+        <option>WBGT / Heat Safety</option>
+        <option>Other</option>
+      </select>
+    </label>
+    <label>Message / Project Details<br><textarea name="message" rows="6"></textarea></label>
+    <button type="submit" class="mv-btn-primary">Send</button>
+  </form>
+</main>
+
+<footer class="mv-footer">
+  <p>© <span id="mv-year"></span> MeteoVeritas.</p>
+</footer>
+<script src="/assets/js/main.js"></script>
+</body>
+</html>
