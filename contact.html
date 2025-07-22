@@ -20,9 +20,18 @@
   <h1>Request Services / Ask a Question</h1>
   <p>Tell us what you need—legal case weather, storm damage drone survey, WBGT data, or custom forecast support.</p>
 
-  <form name="mv-contact" method="POST" data-netlify="true" netlify-honeypot="bot-field" class="mv-contact-form">
-    <input type="hidden" name="form-name" value="mv-contact">
-    <p class="hidden"><label>Don’t fill this out: <input name="bot-field"></label></p>
+  <form name="mv-contact"
+      method="POST"
+      action="/thank-you.html"
+      data-netlify="true"
+      netlify-honeypot="bot-field"
+      class="mv-contact-form">
+  <input type="hidden" name="form-name" value="mv-contact">
+  <p class="hidden">
+    <label>Don’t fill this out: <input name="bot-field"></label>
+  </p>
+  <!-- rest of your inputs -->
+
 
     <label>Your Name*<br><input type="text" name="name" required></label>
     <label>Email*<br><input type="email" name="email" required></label>
