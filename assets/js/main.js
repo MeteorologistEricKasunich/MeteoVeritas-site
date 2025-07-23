@@ -76,20 +76,22 @@ async function handleWeatherSearch(e){
  * Sample: ?address=Dunedin%20FL&benchmark=Public_AR_Current&format=json
  * Service covers U.S., PR, and Island Areas. 
  */
-async function geocodeUS(query){
-  const url = `${CENSUS_GEOCODE_BASE}?address=${escapeQuery(query)}&benchmark=Public_AR_Current&format=json`;
-  const resp = await fetch(url, {headers:{'User-Agent':USER_AGENT}});
-  if(!resp.ok) throw new Error(`Geocoder HTTP ${resp.status}`);
+async function geocodeUS(location) {
+  const url = `/.netlify/functions/geocode?address=${encodeURIComponent(location)}`;
+  const resp = await fetch(url);
   const data = await resp.json();
-  // Parse first result if exists
-  const result = data?.result?.addressMatches?.[0];
-  if(!result) return {lat:null, lon:null};
+
+  const match = data.result?.addressMatches?.[0];
+  if (!match) {
+    throw new Error("Geocode failed: no match found");
+  }
+
   return {
-    lat: result.coordinates.y,
-    lon: result.coordinates.x,
-    matchedAddress: result.matchedAddress
+    lat: match.coordinates.y,
+    lon: match.coordinates.x,
   };
 }
+
 
 /* ====== NWS POINT LOOKUP ======
  * /points/{lat},{lon} returns forecast & forecastHourly URLs + office info. 
