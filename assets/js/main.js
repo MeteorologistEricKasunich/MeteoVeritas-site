@@ -4,7 +4,7 @@
  */
 
 /* ====== CONFIG ====== */
-const USER_AGENT = "MeteoVeritasSite/0.1 (+https://YOUR-SITE.netlify.app; contact=erickasunichweather@gmail.com)"; // NWS asks for identifying User-Agent. 
+const USER_AGENT = "MeteoVeritasSite/0.1 (+https://meteoveritas-site.netlify.app; contact=erickasunichweather@gmail.com)"; // NWS asks for identifying User-Agent. 
 const CENSUS_GEOCODE_BASE = "https://geocoding.geo.census.gov/geocoder/locations/onelineaddress"; // U.S. Census Geocoding API. 
 
 /* ====== UTILITIES ====== */
