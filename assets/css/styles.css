@@ -151,6 +151,21 @@ body {
   color:var(--mv-white);
   margin-top:4rem;
 }
+.mv-weather-results.loading::before {
+  content: "Loading…";
+  display: block;
+  padding: 1rem;
+  font-weight: bold;
+}
+
+.mv-weather-error {
+  color: #b00020;
+  padding: 1rem;
+  background: #ffe5e5;
+  border-radius: var(--mv-radius);
+  margin-top: 1rem;
+}
+
 
 /* WBGT legend bands */
 .mv-wbgt-bands{list-style:none;padding:0;margin:1rem 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:0.5rem;}
