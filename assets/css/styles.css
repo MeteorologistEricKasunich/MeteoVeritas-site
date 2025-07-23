@@ -19,6 +19,29 @@ body {
   line-height:1.4;
 }
 
+.mv-forecast-cards {
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+  gap:1rem;
+  margin-top:1.5rem;
+}
+.mv-forecast-card {
+  background:var(--mv-white);
+  padding:1rem;
+  border-radius:var(--mv-radius);
+  box-shadow:0 1px 4px rgba(0,0,0,.1);
+  text-align:center;
+}
+.mv-forecast-card img {
+  max-width:100%;
+  height:auto;
+}
+.mv-forecast-wind {
+  font-size:0.9rem;
+  color:#555;
+}
+
+
 .mv-header {
   background:var(--mv-slate);
   color:var(--mv-white);
