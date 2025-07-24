@@ -45,7 +45,7 @@ async function geocodeWithOpenMeteo(location) {
 }
 
 async function loadNWSForecast(lat, lon) {
-  const pointUrl = `https://api.weather.gov/points/${lat},${lon}`;
+const pointUrl = `https://api.weather.gov/points/${lat.toFixed(4)},${lon.toFixed(4)}`;
   const pointResp = await fetch(pointUrl);
   const pointData = await pointResp.json();
 
