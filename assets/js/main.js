@@ -51,12 +51,12 @@ function displayNWSForecast(forecastData) {
     const card = document.createElement("div");
     card.className = "mv-forecast-card";
     card.innerHTML = `
-      <h3>${period.name}</h3>
-      <img src="${period.icon}" alt="${period.shortForecast}" />
-      <p><strong>${period.temperature}°F</strong> – ${period.shortForecast}</p>
-      <p><em>${period.windDirection} ${period.windSpeed}</em></p>
-      <p>${period.detailedForecast}</p>
-    `;
+  <h3>${dates[i]}</h3>
+  <img src="https://www.weatherbit.io/static/img/icons/c01d.png" alt="Weather icon" style="width:60px;height:60px;">
+  <p><strong>High:</strong> ${highs[i]}°F</p>
+  <p><strong>Low:</strong> ${lows[i]}°F</p>
+  <p><strong>Rain:</strong> ${rain[i]} mm</p>
+`;
     container.appendChild(card);
   });
 }
