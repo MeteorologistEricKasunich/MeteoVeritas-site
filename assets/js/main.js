@@ -101,21 +101,6 @@ async function geocodeUS(location) {
   };
 }
   
-async function geocodeUS(location) {
-  const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(location)}&count=1&language=en&format=json`;
-  const resp = await fetch(url);
-  const data = await resp.json();
-
-  const match = data.results?.[0];
-  if (!match) {
-    throw new Error("Geocode failed: no match found");
-  }
-
-  return {
-    lat: match.latitude,
-    lon: match.longitude,
-  };
-}
 
 
 /* ====== NWS POINT LOOKUP ======
