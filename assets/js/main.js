@@ -1,5 +1,7 @@
+// main.js — Full Weather Search & NWS Forecast Integration with ZIP & City Search Support
+
 document.addEventListener("DOMContentLoaded", () => {
-  const form = document.getElementById("mv-weather-search");
+  const form = document.getElementById("mv-weather-search") || document.getElementById("weather-form");
   if (form) {
     form.addEventListener("submit", handleWeatherSearch);
   }
@@ -7,52 +9,50 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function handleWeatherSearch(e) {
   e.preventDefault();
-  const locationInput = document.getElementById("location");
-  const errorDiv = document.getElementById("error-message");
-  const forecastContainer = document.getElementById("seven-day-forecast");
-  forecastContainer.innerHTML = "";
+  const input = document.getElementById("location");
+  const location = input.value.trim().replace(/,/g, '').replace(/\s+/g, ' ');
 
-  let location = locationInput.value.trim().replace(/,/g, "").replace(/\s+/g, " ");
   if (!location) {
-    errorDiv.innerText = "Please enter a location.";
-    errorDiv.style.display = "block";
+    alert("Please enter a location.");
     return;
   }
 
   try {
-    const coords = await geocodeWithOpenMeteo(location);
-    await loadNWSForecast(coords.lat, coords.lon);
-    errorDiv.style.display = "none";
+    const { lat, lon, city, state } = await geocodeWithOpenMeteo(location);
+    await loadNWSForecast(lat, lon);
   } catch (err) {
-    console.error(err);
-    errorDiv.innerText = "Could not load weather data for that location. Try a different city or ZIP.";
-    errorDiv.style.display = "block";
+    console.error("Search error:", err);
+    alert("Could not retrieve weather data. Please try again.");
   }
 }
 
 async function geocodeWithOpenMeteo(location) {
-  const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(location)}&count=1`;
+  const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(location)}&count=1&language=en&format=json`;
   const resp = await fetch(url);
   const data = await resp.json();
 
   if (!data.results || data.results.length === 0) {
-    throw new Error("Geocode failed");
+    throw new Error("Geocode failed: no match found");
   }
 
+  const match = data.results[0];
   return {
-    lat: data.results[0].latitude.toFixed(4),
-    lon: data.results[0].longitude.toFixed(4)
+    lat: match.latitude,
+    lon: match.longitude,
+    city: match.name,
+    state: match.admin1
   };
 }
 
 async function loadNWSForecast(lat, lon) {
-  const pointResp = await fetch(`https://api.weather.gov/points/${lat},${lon}`);
+  const pointUrl = `https://api.weather.gov/points/${lat},${lon}`;
+  const pointResp = await fetch(pointUrl);
   const pointData = await pointResp.json();
 
-  const forecastURL = pointData.properties?.forecast;
-  if (!forecastURL) throw new Error("NWS forecast URL not found");
+  const forecastUrl = pointData.properties?.forecast;
+  if (!forecastUrl) throw new Error("NWS forecast URL not found");
 
-  const forecastResp = await fetch(forecastURL);
+  const forecastResp = await fetch(forecastUrl);
   const forecastData = await forecastResp.json();
 
   displayNWSForecast(forecastData.properties.periods);
@@ -60,18 +60,18 @@ async function loadNWSForecast(lat, lon) {
 
 function displayNWSForecast(periods) {
   const container = document.getElementById("seven-day-forecast");
+  if (!container) return;
   container.innerHTML = "";
 
   periods.slice(0, 7).forEach(period => {
     const card = document.createElement("div");
     card.className = "forecast-day";
     card.innerHTML = `
-      <img src="${period.icon}" alt="${period.shortForecast}" class="weather-icon">
+      <img class="weather-icon" src="${period.icon}" alt="${period.shortForecast}">
       <div class="forecast-info">
         <h4>${period.name}</h4>
-        <p><strong>${period.temperature}°F</strong> – ${period.shortForecast}</p>
-        <p>${period.windSpeed} ${period.windDirection}</p>
-        <p><em>${period.detailedForecast}</em></p>
+        <p><strong>${period.temperature}°${period.temperatureUnit}</strong> — ${period.shortForecast}</p>
+        <p>${period.detailedForecast}</p>
       </div>
     `;
     container.appendChild(card);
