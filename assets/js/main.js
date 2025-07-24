@@ -78,6 +78,7 @@ async function handleWeatherSearch(e) {
   // Clean and simplify user input
   location = location.replace(/,/g, ""); // remove commas
   location = location.replace(/\s+/g, " "); // collapse multiple spaces
+}
 
 
 /* ====== GEOCODING (U.S. Census Geocoder) ======
