@@ -20,7 +20,7 @@ async function handleWeatherSearch(e) {
   }
 
   try {
-    const coords = await getLatLonFromNWS(location);
+    const coords = await geocodeWithOpenMeteo(location);
     await loadNWSForecast(coords.lat, coords.lon);
     errorDiv.style.display = "none";
   } catch (err) {
@@ -30,7 +30,7 @@ async function handleWeatherSearch(e) {
   }
 }
 
-async function getLatLonFromNWS(location) {
+async function geocodeWithOpenMeteo(location) {
   const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(location)}&count=1`;
   const resp = await fetch(url);
   const data = await resp.json();
@@ -40,15 +40,17 @@ async function getLatLonFromNWS(location) {
   }
 
   return {
-    lat: data.results[0].latitude,
-    lon: data.results[0].longitude
+    lat: data.results[0].latitude.toFixed(4),
+    lon: data.results[0].longitude.toFixed(4)
   };
 }
 
 async function loadNWSForecast(lat, lon) {
   const pointResp = await fetch(`https://api.weather.gov/points/${lat},${lon}`);
   const pointData = await pointResp.json();
+
   const forecastURL = pointData.properties.forecast;
+  if (!forecastURL) throw new Error("NWS forecast URL not found");
 
   const forecastResp = await fetch(forecastURL);
   const forecastData = await forecastResp.json();
