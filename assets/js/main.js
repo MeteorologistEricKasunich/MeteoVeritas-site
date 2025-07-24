@@ -45,8 +45,12 @@ async function geocodeWithOpenMeteo(location) {
 }
 
 async function loadNWSForecast(lat, lon) {
-  const pointUrl = `https://api.weather.gov/points/${lat.toFixed(6)},${lon.toFixed(6)}`;
-  const pointResp = await fetch(pointUrl);
+  const pointUrl = `https://api.weather.gov/points/${lat},${lon}`;
+  const pointResp = await fetch(pointUrl, {
+    headers: {
+      "User-Agent": "MeteoVeritas (https://meteoveritas.netlify.app, contact@example.com)"
+    }
+  });
 
   if (!pointResp.ok) {
     throw new Error(`NWS point lookup failed: ${pointResp.status}`);
@@ -60,12 +64,15 @@ async function loadNWSForecast(lat, lon) {
     throw new Error("NWS forecast URL not found");
   }
 
-  const forecastResp = await fetch(forecastUrl);
-  const forecastData = await forecastResp.json();
+  const forecastResp = await fetch(forecastUrl, {
+    headers: {
+      "User-Agent": "MeteoVeritas (https://meteoveritas.netlify.app, contact@example.com)"
+    }
+  });
 
+  const forecastData = await forecastResp.json();
   displayNWSForecast(forecastData.properties.periods);
 }
-
 
 function displayNWSForecast(periods) {
   const container = document.getElementById("seven-day-forecast");
