@@ -40,11 +40,13 @@
   style="border:0;"
   allowfullscreen
 ></iframe>
- 
+
+  <h2>7-Day Forecast</h2>
+<div id="seven-day-forecast" class="mv-forecast-vertical"></div>
   
   <h2>Radar (static placeholder)</h2>
-  <p>Animated radar coming soon.</p>
-  <img src="https://placehold.co/600x300?text=Radar+Goes+Here" alt="Radar placeholder">
+  <p>Hi-Res Future Forecast coming soon.</p>
+  <img src="https://placehold.co/600x300?text=Forecast+Goes+Here" alt="Radar placeholder">
 </main>
 
 <footer class="mv-footer">
@@ -52,5 +54,40 @@
   <p>© <span id="mv-year"></span> MeteoVeritas.</p>
 </footer>
 <script src="/assets/js/main.js"></script>
+
+<script>
+async function loadNWSForecast(zip = "34698") {
+  const url = `https://api.weather.gov/points/${zip}`;
+  try {
+    const pointResp = await fetch(url);
+    const pointData = await pointResp.json();
+    const forecastUrl = pointData.properties.forecast;
+
+    const forecastResp = await fetch(forecastUrl);
+    const forecastData = await forecastResp.json();
+    const periods = forecastData.properties.periods.slice(0, 7); // 7-day
+
+    const container = document.getElementById("seven-day-forecast");
+    container.innerHTML = "";
+
+    periods.forEach(period => {
+      const card = document.createElement("div");
+      card.className = "mv-forecast-day";
+      card.innerHTML = `
+        <div class="mv-forecast-header">${period.name}</div>
+        <img src="${period.icon}" alt="${period.shortForecast}" class="mv-forecast-icon">
+        <div class="mv-forecast-temps">${period.temperature}°${period.temperatureUnit}</div>
+        <p class="mv-forecast-text">${period.shortForecast}</p>
+      `;
+      container.appendChild(card);
+    });
+  } catch (error) {
+    console.error("Failed to load NWS forecast:", error);
+  }
+}
+
+loadNWSForecast();
+</script>
+  
 </body>
 </html>
