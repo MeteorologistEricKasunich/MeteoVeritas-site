@@ -26,21 +26,26 @@ body {
   margin-top:1.5rem;
 }
 .mv-forecast-card {
-  background:var(--mv-white);
-  padding:1rem;
-  border-radius:var(--mv-radius);
-  box-shadow:0 1px 4px rgba(0,0,0,.1);
-  text-align:center;
+  background: linear-gradient(to bottom right, #ffffff, #f0f4f8);
+  padding: 1.25rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  text-align: center;
+  transition: transform 0.2s ease;
+  border: 1px solid #e0e0e0;
 }
-.mv-forecast-card img {
-  max-width:100%;
-  height:auto;
+.mv-forecast-card:hover {
+  transform: scale(1.03);
 }
-.mv-forecast-wind {
-  font-size:0.9rem;
-  color:#555;
+.mv-forecast-card h3 {
+  margin-top: 0;
+  font-size: 1.1rem;
+  color: var(--mv-slate);
 }
-
+.mv-forecast-card p {
+  margin: 0.5rem 0;
+  font-size: 0.95rem;
+}
 
 .mv-header {
   background:var(--mv-slate);
