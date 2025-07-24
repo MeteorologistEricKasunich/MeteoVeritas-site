@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const form = document.getElementById("weather-form") || document.getElementById("mv-weather-search");
+  const form = document.getElementById("mv-weather-search");
   if (form) {
     form.addEventListener("submit", handleWeatherSearch);
   }
@@ -7,69 +7,56 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function handleWeatherSearch(e) {
   e.preventDefault();
-  const locationInput = document.getElementById("location");
-  let location = locationInput.value.trim();
-
-  // Clean and simplify input
-  location = location.replace(/,/g, "");
-  location = location.replace(/\s+/g, " ");
-
+  const input = document.getElementById("location");
+  let location = input.value.trim().replace(/,/g, "").replace(/\s+/g, " ");
   if (!location) {
     alert("Please enter a location.");
     return;
   }
 
   try {
-    const coords = await geocodeUS(location);
-    const weatherData = await fetchWeather(coords.lat, coords.lon);
-    displayForecast(weatherData);
+    const coords = await geocodeWithOpenMeteo(location);
+    const forecastData = await fetchNWSForecast(coords.lat, coords.lon);
+    displayNWSForecast(forecastData);
   } catch (err) {
     console.error(err);
     alert("Could not retrieve weather data. Please try again.");
   }
 }
 
-async function geocodeUS(location) {
-  const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(location)}&count=1&language=en&format=json`;
+async function geocodeWithOpenMeteo(location) {
+  const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(location)}&count=1`;
   const resp = await fetch(url);
   const data = await resp.json();
-
   const match = data.results?.[0];
-  if (!match) {
-    throw new Error("Geocode failed: no match found");
-  }
-
-  return {
-    lat: match.latitude,
-    lon: match.longitude,
-  };
+  if (!match) throw new Error("No location match found");
+  return { lat: match.latitude, lon: match.longitude };
 }
 
-async function fetchWeather(lat, lon) {
-const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&temperature_unit=fahrenheit&timezone=auto`;
-  const resp = await fetch(url);
-  const data = await resp.json();
-  return data;
+async function fetchNWSForecast(lat, lon) {
+  const pointUrl = `https://api.weather.gov/points/${lat},${lon}`;
+  const pointResp = await fetch(pointUrl);
+  const pointData = await pointResp.json();
+  const forecastUrl = pointData.properties.forecast;
+  const forecastResp = await fetch(forecastUrl);
+  return await forecastResp.json();
 }
 
-function displayForecast(data) {
-  const container = document.getElementById("forecast-cards");
-  container.innerHTML = ""; // Clear previous cards
+function displayNWSForecast(forecastData) {
+  const container = document.getElementById("mv-weather-results");
+  container.innerHTML = "";
+  const periods = forecastData.properties.periods;
 
-  const dates = data.daily.time;
-  const highs = data.daily.temperature_2m_max;
-  const lows = data.daily.temperature_2m_min;
-  const rain = data.daily.precipitation_sum;
-
-  for (let i = 0; i < dates.length; i++) {
+  periods.slice(0, 6).forEach(period => {
     const card = document.createElement("div");
-    card.className = "weather-card";
+    card.className = "mv-forecast-card";
     card.innerHTML = `
-      <h3>${dates[i]}</h3>
-      <p><strong>High:</strong> ${highs[i]}°F</p>
-      <p><strong>Low:</strong> ${lows[i]}°F</p>
-      <p><strong>Rain:</strong> ${rain[i]} mm</p>
+      <h3>${period.name}</h3>
+      <img src="${period.icon}" alt="${period.shortForecast}" />
+      <p><strong>${period.temperature}°F</strong> – ${period.shortForecast}</p>
+      <p><em>${period.windDirection} ${period.windSpeed}</em></p>
+      <p>${period.detailedForecast}</p>
     `;
     container.appendChild(card);
-  }
+  });
 }
