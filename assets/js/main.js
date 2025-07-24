@@ -70,6 +70,15 @@ async function handleWeatherSearch(e){
     showError(out,"Error getting weather data. Please try again.");
   }
 }
+async function handleWeatherSearch(e) {
+  e.preventDefault();
+  const locationInput = document.getElementById("location");
+  let location = locationInput.value.trim();
+
+  // Clean and simplify user input
+  location = location.replace(/,/g, ""); // remove commas
+  location = location.replace(/\s+/g, " "); // collapse multiple spaces
+
 
 /* ====== GEOCODING (U.S. Census Geocoder) ======
  * We send the user string in the 'address' param (onelineaddress mode).
