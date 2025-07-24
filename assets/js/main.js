@@ -1,91 +1,34 @@
-/* MeteoVeritas main.js
- * Basic live NWS forecast integration
- * v0.1
- */
-
-/* ====== CONFIG ====== */
-const USER_AGENT = "MeteoVeritasSite/0.1 (+https://meteoveritas-site.netlify.app; contact=erickasunichweather@gmail.com)"; // NWS asks for identifying User-Agent. 
-const CENSUS_GEOCODE_BASE = "https://geocoding.geo.census.gov/geocoder/locations/onelineaddress"; // U.S. Census Geocoding API. 
-
-/* ====== UTILITIES ====== */
-function qs(id){return document.getElementById(id);}
-function escapeQuery(q){return encodeURIComponent(q.trim());}
-
-function showLoading(el){
-  el.classList.add("loading");
-  el.innerHTML = "";
-}
-function clearLoading(el){
-  el.classList.remove("loading");
-}
-function showError(el,msg){
-  clearLoading(el);
-  el.innerHTML = `<div class="mv-weather-error">${msg}</div>`;
-}
-
-/* ====== YEAR FOOTER ====== */
-document.addEventListener('DOMContentLoaded', () => {
-  const yearEl = document.getElementById('mv-year');
-  if (yearEl) { yearEl.textContent = new Date().getFullYear(); }
-
-  const form = qs('mv-weather-search');
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.getElementById("weather-form") || document.getElementById("mv-weather-search");
   if (form) {
-    form.addEventListener('submit', handleWeatherSearch);
+    form.addEventListener("submit", handleWeatherSearch);
   }
 });
 
-/* ====== MAIN SEARCH HANDLER ====== */
-async function handleWeatherSearch(e){
-  e.preventDefault();
-  const locStr = qs('mv-location-input').value;
-  const out = qs('mv-weather-results');
-  if(!locStr){
-    showError(out,"Please enter a location (City, ST or ZIP).");
-    return;
-  }
-  showLoading(out);
-
-  try {
-    const {lat, lon, matchedAddress} = await geocodeUS(locStr);
-    if(lat == null || lon == null){
-      showError(out, "Sorry, couldn't find that location. Try City, ST or ZIP.");
-      return;
-    }
-    const pointData = await getNwsPoint(lat, lon);
-    if(!pointData || !pointData.properties){
-      showError(out,"NWS point lookup failed.");
-      return;
-    }
-    const forecastUrl = pointData.properties.forecast;
-    const hourlyUrl   = pointData.properties.forecastHourly;
-    const office      = pointData.properties.cwa;
-    const city        = pointData.properties.relativeLocation?.properties?.city || "";
-    const state       = pointData.properties.relativeLocation?.properties?.state || "";
-
-    const forecastData = await getJson(forecastUrl); // 12h/periods forecast. 
-    clearLoading(out);
-    renderForecast(out, {locStr, matchedAddress, city, state, office, forecastData, hourlyUrl});
-  } catch(err){
-    console.error(err);
-    showError(out,"Error getting weather data. Please try again.");
-  }
-}
 async function handleWeatherSearch(e) {
   e.preventDefault();
   const locationInput = document.getElementById("location");
   let location = locationInput.value.trim();
 
-  // Clean and simplify user input
-  location = location.replace(/,/g, ""); // remove commas
-  location = location.replace(/\s+/g, " "); // collapse multiple spaces
+  // Clean and simplify input
+  location = location.replace(/,/g, "");
+  location = location.replace(/\s+/g, " ");
+
+  if (!location) {
+    alert("Please enter a location.");
+    return;
+  }
+
+  try {
+    const coords = await geocodeUS(location);
+    const weatherData = await fetchWeather(coords.lat, coords.lon);
+    displayForecast(weatherData);
+  } catch (err) {
+    console.error(err);
+    alert("Could not retrieve weather data. Please try again.");
+  }
 }
 
-
-/* ====== GEOCODING (U.S. Census Geocoder) ======
- * We send the user string in the 'address' param (onelineaddress mode).
- * Sample: ?address=Dunedin%20FL&benchmark=Public_AR_Current&format=json
- * Service covers U.S., PR, and Island Areas. 
- */
 async function geocodeUS(location) {
   const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(location)}&count=1&language=en&format=json`;
   const resp = await fetch(url);
@@ -101,50 +44,32 @@ async function geocodeUS(location) {
     lon: match.longitude,
   };
 }
-  
 
-
-/* ====== NWS POINT LOOKUP ======
- * /points/{lat},{lon} returns forecast & forecastHourly URLs + office info. 
- */
-async function getNwsPoint(lat, lon){
-  const url = `https://api.weather.gov/points/${lat},${lon}`;
-  const resp = await fetch(url, {headers:{'User-Agent':USER_AGENT,'Accept':'application/geo+json'}});
-  if(!resp.ok) throw new Error(`NWS points HTTP ${resp.status}`);
-  return resp.json();
+async function fetchWeather(lat, lon) {
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=auto`;
+  const resp = await fetch(url);
+  const data = await resp.json();
+  return data;
 }
 
-/* Generic JSON fetch helper */
-async function getJson(url){
-  const resp = await fetch(url, {headers:{'User-Agent':USER_AGENT,'Accept':'application/geo+json'}});
-  if(!resp.ok) throw new Error(`Fetch JSON HTTP ${resp.status}`);
-  return resp.json();
-}
+function displayForecast(data) {
+  const container = document.getElementById("forecast-cards");
+  container.innerHTML = ""; // Clear previous cards
 
-/* ====== RENDER FORECAST CARDS ======
- * NWS /forecast returns properties.periods[] with name, temperature, wind, shortForecast, detailedForecast. 
- */
-function renderForecast(container, ctx){
-  const {locStr, matchedAddress, city, state, office, forecastData, hourlyUrl} = ctx;
-  const periods = forecastData?.properties?.periods || [];
-  let html = "";
-  html += `<h2>Forecast for ${city && state ? `${city}, ${state}` : (matchedAddress || locStr)}</h2>`;
-  html += `<p>Source: National Weather Service (${office}). Not for life/critical decision use.</p>`;
-  html += `<div class="mv-forecast-cards">`;
-  for(const p of periods){
-    html += `
-      <div class="mv-forecast-card">
-        <h3>${p.name}</h3>
-        <img src="${p.icon}" alt="${p.shortForecast}">
-        <p><strong>${p.temperature}°${p.temperatureUnit}</strong></p>
-        <p>${p.shortForecast}</p>
-        <p class="mv-forecast-wind">${p.windSpeed} ${p.windDirection}</p>
-      </div>`;
+  const dates = data.daily.time;
+  const highs = data.daily.temperature_2m_max;
+  const lows = data.daily.temperature_2m_min;
+  const rain = data.daily.precipitation_sum;
+
+  for (let i = 0; i < dates.length; i++) {
+    const card = document.createElement("div");
+    card.className = "weather-card";
+    card.innerHTML = `
+      <h3>${dates[i]}</h3>
+      <p><strong>High:</strong> ${highs[i]}°F</p>
+      <p><strong>Low:</strong> ${lows[i]}°F</p>
+      <p><strong>Rain:</strong> ${rain[i]} mm</p>
+    `;
+    container.appendChild(card);
   }
-  html += `</div>`;
-  if(hourlyUrl){
-    html += `<p><a class="mv-card-btn" href="${hourlyUrl}" target="_blank" rel="noopener">View Hourly JSON</a></p>`;
-  }
-  container.innerHTML = html;
 }
-
