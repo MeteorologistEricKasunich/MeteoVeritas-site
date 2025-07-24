@@ -77,18 +77,18 @@ async function handleWeatherSearch(e){
  * Service covers U.S., PR, and Island Areas. 
  */
 async function geocodeUS(location) {
-  const url = `/.netlify/functions/geocode?address=${encodeURIComponent(location)}`;
+  const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(location)}&count=1&language=en&format=json`;
   const resp = await fetch(url);
   const data = await resp.json();
 
-  const match = data.result?.addressMatches?.[0];
+  const match = data.results?.[0];
   if (!match) {
     throw new Error("Geocode failed: no match found");
   }
 
   return {
-    lat: match.coordinates.y,
-    lon: match.coordinates.x,
+    lat: match.latitude,
+    lon: match.longitude,
   };
 }
 
