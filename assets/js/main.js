@@ -49,7 +49,7 @@ async function loadNWSForecast(lat, lon) {
   const pointResp = await fetch(`https://api.weather.gov/points/${lat},${lon}`);
   const pointData = await pointResp.json();
 
-  const forecastURL = pointData.properties.forecast;
+  const forecastURL = pointData.properties?.forecast;
   if (!forecastURL) throw new Error("NWS forecast URL not found");
 
   const forecastResp = await fetch(forecastURL);
