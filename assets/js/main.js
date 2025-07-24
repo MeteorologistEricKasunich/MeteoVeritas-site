@@ -45,18 +45,27 @@ async function geocodeWithOpenMeteo(location) {
 }
 
 async function loadNWSForecast(lat, lon) {
-const pointUrl = `https://api.weather.gov/points/${lat.toFixed(6)},${lon.toFixed(6)}`;
+  const pointUrl = `https://api.weather.gov/points/${lat.toFixed(6)},${lon.toFixed(6)}`;
   const pointResp = await fetch(pointUrl);
-  const pointData = await pointResp.json();
 
+  if (!pointResp.ok) {
+    throw new Error(`NWS point lookup failed: ${pointResp.status}`);
+  }
+
+  const pointData = await pointResp.json();
   const forecastUrl = pointData.properties?.forecast;
-  if (!forecastUrl) throw new Error("NWS forecast URL not found");
+
+  if (!forecastUrl) {
+    console.error("NWS forecast URL not found in response:", pointData);
+    throw new Error("NWS forecast URL not found");
+  }
 
   const forecastResp = await fetch(forecastUrl);
   const forecastData = await forecastResp.json();
 
   displayNWSForecast(forecastData.properties.periods);
 }
+
 
 function displayNWSForecast(periods) {
   const container = document.getElementById("seven-day-forecast");
