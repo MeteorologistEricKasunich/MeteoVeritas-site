@@ -109,3 +109,4 @@ function displayNWSForecast(periods) {
   });
 
   container.appendChild(forecastRow);
+}
