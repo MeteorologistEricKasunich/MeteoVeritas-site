@@ -47,6 +47,14 @@
   <p>Data: National Weather Service (NWS). </p>
   <p>© <span id="mv-year"></span> MeteoVeritas.</p>
 </footer>
-<script src="/assets/js/main.js"></script>
+  <script src="/assets/js/main.js"></script>
+  <script>
+    document.getElementById("mv-year").textContent = new Date().getFullYear();
+  </script>
+  <script>
+    // TEMPORARY TEST: Load forecast for Dunedin, FL (lat: 28.0114, lon: -82.78)
+    loadNWSForecast(28.0114, -82.78);
+  </script>
 </body>
 </html>
+
