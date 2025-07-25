@@ -16,7 +16,52 @@ async function handleWeatherSearch(e) {
     alert("Please enter a location.");
     return;
   }
+async function getHistoricalWeather(zipCode) {
+  try {
+    // STEP 1: Convert ZIP to lat/lon using Open-Meteo Geocoding API
+    const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?postal_code=${zipCode}&country=US`);
+    const geoData = await geoRes.json();
+    const location = geoData.results?.[0];
+    if (!location) {
+      alert("Could not find location for ZIP code.");
+      return;
+    }
+    const { latitude, longitude, name, admin1 } = location;
 
+    // STEP 2: Get date range for past 3 days
+    const today = new Date();
+    const endDate = today.toISOString().split('T')[0];
+    const startDate = new Date(today.setDate(today.getDate() - 3)).toISOString().split('T')[0];
+
+    // STEP 3: Fetch historical data from Meteostat
+    const apiKey = 'YOUR_METEOSTAT_API_KEY';
+    const url = `https://api.meteostat.net/v2/point/daily?lat=${latitude}&lon=${longitude}&start=${startDate}&end=${endDate}`;
+    const historyRes = await fetch(url, {
+      headers: { 'x-api-key': apiKey }
+    });
+    const historyData = await historyRes.json();
+
+    // STEP 4: Render the results
+    const container = document.getElementById("weather-history");
+    container.innerHTML = `<h3>Past 3 Days: ${name}, ${admin1}</h3>`;
+    historyData.data.forEach(day => {
+      const card = document.createElement("div");
+      card.className = "history-card";
+      card.innerHTML = `
+        <strong>${day.date}</strong><br>
+        High: ${day.tmax} °F<br>
+        Low: ${day.tmin} °F<br>
+        Precip: ${day.prcp ?? 0} in
+      `;
+      container.appendChild(card);
+    });
+
+  } catch (error) {
+    console.error("Error getting weather history:", error);
+  }
+}
+
+  
   try {
     const { lat, lon, city, state } = await geocodeWithOpenMeteo(location);
     await loadNWSForecast(lat, lon);
