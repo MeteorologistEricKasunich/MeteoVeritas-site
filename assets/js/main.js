@@ -34,12 +34,24 @@ async function getHistoricalWeather(zipCode) {
     const startDate = new Date(today.setDate(today.getDate() - 3)).toISOString().split('T')[0];
 
     // STEP 3: Fetch historical data from Meteostat
-    const apiKey = 'YOUR_METEOSTAT_API_KEY';
-    const url = `https://api.meteostat.net/v2/point/daily?lat=${latitude}&lon=${longitude}&start=${startDate}&end=${endDate}`;
-    const historyRes = await fetch(url, {
-      headers: { 'x-api-key': apiKey }
-    });
-    const historyData = await historyRes.json();
+    const apiKey = '4500430017msh37a9cc063754634p1bd356jsn1122cd12aa3e';
+
+const url = 'https://meteostat.p.rapidapi.com/point/monthly?lat=52.5244&lon=13.4105&alt=43&start=2020-01-01&end=2020-12-31';
+
+fetch(url, {
+  method: 'GET',
+  headers: {
+    'x-rapidapi-host': 'meteostat.p.rapidapi.com',
+    'x-rapidapi-key': apiKey
+  }
+})
+  .then(response => response.json())
+  .then(data => {
+    console.log('Meteostat data:', data);
+    // You can now use this data in your UI
+  })
+  .catch(err => console.error('Error fetching Meteostat data:', err));
+
 
     // STEP 4: Render the results
     const container = document.getElementById("weather-history");
