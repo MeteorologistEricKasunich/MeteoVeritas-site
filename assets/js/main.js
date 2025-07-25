@@ -45,7 +45,7 @@ async function geocodeWithOpenMeteo(location) {
 }
 
 async function loadNWSForecast(lat, lon) {
-  const pointUrl = `https://api.weather.gov/points/${lat},${lon}`;
+  const pointUrl = `https://api.weather.gov/points/${lat.toFixed(6)},${lon.toFixed(6)}`;
   const pointResp = await fetch(pointUrl, {
     headers: {
       "User-Agent": "MeteoVeritas (https://meteoveritas.netlify.app, contact@example.com)"
@@ -79,17 +79,33 @@ function displayNWSForecast(periods) {
   if (!container) return;
   container.innerHTML = "";
 
+  const forecastRow = document.createElement("div");
+  forecastRow.style.display = "flex";
+  forecastRow.style.flexWrap = "wrap";
+  forecastRow.style.justifyContent = "space-between";
+  forecastRow.style.gap = "1rem";
+
   periods.slice(0, 7).forEach(period => {
     const card = document.createElement("div");
     card.className = "forecast-day";
+    card.style.flex = "1 1 120px";
+    card.style.border = "1px solid #ccc";
+    card.style.borderRadius = "8px";
+    card.style.padding = "10px";
+    card.style.background = "#fff";
+    card.style.textAlign = "center";
+
     card.innerHTML = `
-      <img class="weather-icon" src="${period.icon}" alt="${period.shortForecast}">
+      <img class="weather-icon" src="${period.icon}" alt="${period.shortForecast}" style="width:60px;height:60px">
       <div class="forecast-info">
         <h4>${period.name}</h4>
-        <p><strong>${period.temperature}°${period.temperatureUnit}</strong> — ${period.shortForecast}</p>
-        <p>${period.detailedForecast}</p>
+        <p><strong>${period.temperature}°${period.temperatureUnit}</strong></p>
+        <p>${period.shortForecast}</p>
+        <p style="font-size:0.85em;color:#555">${period.detailedForecast}</p>
       </div>
     `;
-    container.appendChild(card);
+
+    forecastRow.appendChild(card);
   });
-}
+
+  container.appendChild(forecastRow);
