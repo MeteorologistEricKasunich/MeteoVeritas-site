@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Historical Weather | MeteoVeritas</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/assets/css/styles.css">
+  <style>
+    .history-card {
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 10px;
+      margin: 10px;
+      background-color: #f9f9f9;
+      width: 200px;
+      display: inline-block;
+      vertical-align: top;
+    }
+  </style>
+</head>
+<body>
+  <header class="mv-header">
+    <a class="mv-logo" href="/"><img src="/assets/img/placeholder-logo.svg" alt="MeteoVeritas logo" width="160" height="48"></a>
+    <nav class="mv-nav">
+      <a href="/weather.html">Weather Center</a>
+      <a href="/historical.html" class="active">Historical Weather</a>
+      <a href="/wbgt.html">WBGT Center</a>
+      <a href="/consulting.html">Consulting</a>
+      <a href="/contact.html" class="mv-cta-btn">Request Services</a>
+    </nav>
+  </header>
+
+  <main class="mv-weather-wrapper">
+    <h1>Past 3 Days Weather</h1>
+    <p>Enter a U.S. ZIP Code to see the last three days of weather data.</p>
+    <form id="historical-form">
+      <input type="text" id="zip-code" placeholder="e.g., 34698">
+      <button type="submit" class="mv-btn-primary">Get History</button>
+    </form>
+
+    <div id="weather-history"></div>
+  </main>
+
+  <footer class="mv-footer">
+    <p>Data: Meteostat API via RapidAPI.</p>
+    <p>© <span id="mv-year"></span> MeteoVeritas.</p>
+  </footer>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const form = document.getElementById("historical-form");
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const zip = document.getElementById("zip-code").value.trim();
+        if (!zip) return alert("Please enter a ZIP code");
+        await getHistoricalWeather(zip);
+      });
+    });
+
+    async function getHistoricalWeather(zipCode) {
+      try {
+        const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?postal_code=${zipCode}&country=US`);
+        const geoData = await geoRes.json();
+        const location = geoData.results?.[0];
+        if (!location) {
+          alert("Could not find location for ZIP code.");
+          return;
+        }
+
+        const { latitude, longitude, name, admin1 } = location;
+        const today = new Date();
+        const endDate = today.toISOString().split('T')[0];
+        const startDate = new Date(today.setDate(today.getDate() - 3)).toISOString().split('T')[0];
+
+        const apiKey = '4500430017msh37a9cc063754634p1bd356jsn1122cd12aa3e';
+        const url = `https://meteostat.p.rapidapi.com/point/daily?lat=${latitude}&lon=${longitude}&start=${startDate}&end=${endDate}&units=imperial`;
+        const historyRes = await fetch(url, {
+          headers: {
+            'x-rapidapi-host': 'meteostat.p.rapidapi.com',
+            'x-rapidapi-key': apiKey
+          }
+        });
+
+        const historyData = await historyRes.json();
+        const container = document.getElementById("weather-history");
+        container.innerHTML = `<h3>Past 3 Days: ${name}, ${admin1}</h3>`;
+
+        historyData.data.forEach(day => {
+          const card = document.createElement("div");
+          card.className = "history-card";
+          card.innerHTML = `
+            <strong>${day.date}</strong><br>
+            High: ${day.tmax ?? '-'} °F<br>
+            Low: ${day.tmin ?? '-'} °F<br>
+            Precip: ${day.prcp ?? 0} in
+          `;
+          container.appendChild(card);
+        });
+      } catch (error) {
+        console.error("Error getting weather history:", error);
+      }
+    }
+  </script>
+</body>
+</html>
