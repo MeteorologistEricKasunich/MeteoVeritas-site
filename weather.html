@@ -1,10 +1,10 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<title>Weather Center | MeteoVeritas</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="/assets/css/styles.css">
+  <meta charset="utf-8">
+  <title>Weather Center | MeteoVeritas</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/assets/css/styles.css">
 </head>
 <body>
 <header class="mv-header">
@@ -26,59 +26,17 @@
   </form>
 
   <div id="error-message" class="mv-weather-error" style="display: none;"></div>
-<div id="seven-day-forecast"></div>
-
-
-  <!-- Forecast Results -->
-<div id="mv-weather-results" class="mv-weather-results"></div>
-
-  <div id="mv-weather-results" class="mv-weather-results">
-    <!-- JS injects forecast cards here -->
-  </div>
+  <div id="seven-day-forecast" class="mv-forecast-vertical"></div>
 
   <iframe
-  src="https://www.rainviewer.com/map.html?loc=28.01,-82.78,8&oFa=0&oC=0&oU=0&oCS=1&oF=0&oAP=0&c=0&o=83&lm=1&layer=radar&sm=1&sn=1&hu=0"
-  width="100%"
-  height="600"
-  frameborder="0"
-  style="border:0;"
-  allowfullscreen
-></iframe>
+    src="https://www.rainviewer.com/map.html?loc=28.01,-82.78,8&oFa=0&oC=0&oU=0&oCS=1&oF=0&oAP=0&c=0&o=83&lm=1&layer=radar&sm=1&sn=1&hu=0"
+    width="100%"
+    height="600"
+    frameborder="0"
+    style="border:0;"
+    allowfullscreen
+  ></iframe>
 
-  <section id="seven-day-forecast">
-  <div class="forecast-day">
-    <img class="weather-icon" src="https://openweathermap.org/img/wn/01d@2x.png" alt="Sunny">
-    <div class="forecast-info">
-      <h4>Monday</h4>
-      <p>High: 92°F | Low: 78°F</p>
-      <p>Wind: SE 10 mph</p>
-      <p>Rain Chance: 20%</p>
-    </div>
-  </div>
-  <div class="forecast-day">
-    <img class="weather-icon" src="https://openweathermap.org/img/wn/03d@2x.png" alt="Partly Cloudy">
-    <div class="forecast-info">
-      <h4>Tuesday</h4>
-      <p>High: 91°F | Low: 77°F</p>
-      <p>Wind: ESE 9 mph</p>
-      <p>Rain Chance: 30%</p>
-    </div>
-  </div>
-  <div class="forecast-day">
-    <img class="weather-icon" src="https://openweathermap.org/img/wn/10d@2x.png" alt="Showers">
-    <div class="forecast-info">
-      <h4>Wednesday</h4>
-      <p>High: 88°F | Low: 75°F</p>
-      <p>Wind: E 12 mph</p>
-      <p>Rain Chance: 60%</p>
-    </div>
-  </div>
-  <!-- Add 4 more days with realistic values -->
-</section>
-
-  <h2>7-Day Forecast</h2>
-<div id="seven-day-forecast" class="mv-forecast-vertical"></div>
-  
   <h2>Radar (static placeholder)</h2>
   <p>Hi-Res Future Forecast coming soon.</p>
   <img src="https://placehold.co/600x300?text=Forecast+Goes+Here" alt="Radar placeholder">
@@ -89,40 +47,5 @@
   <p>© <span id="mv-year"></span> MeteoVeritas.</p>
 </footer>
 <script src="/assets/js/main.js"></script>
-
-<script>
-async function loadNWSForecast(zip = "34698") {
-  const url = `https://api.weather.gov/points/${zip}`;
-  try {
-    const pointResp = await fetch(url);
-    const pointData = await pointResp.json();
-    const forecastUrl = pointData.properties.forecast;
-
-    const forecastResp = await fetch(forecastUrl);
-    const forecastData = await forecastResp.json();
-    const periods = forecastData.properties.periods.slice(0, 7); // 7-day
-
-    const container = document.getElementById("seven-day-forecast");
-    container.innerHTML = "";
-
-    periods.forEach(period => {
-      const card = document.createElement("div");
-      card.className = "mv-forecast-day";
-      card.innerHTML = `
-        <div class="mv-forecast-header">${period.name}</div>
-        <img src="${period.icon}" alt="${period.shortForecast}" class="mv-forecast-icon">
-        <div class="mv-forecast-temps">${period.temperature}°${period.temperatureUnit}</div>
-        <p class="mv-forecast-text">${period.shortForecast}</p>
-      `;
-      container.appendChild(card);
-    });
-  } catch (error) {
-    console.error("Failed to load NWS forecast:", error);
-  }
-}
-
-loadNWSForecast();
-</script>
-  
 </body>
 </html>
