@@ -46,20 +46,20 @@
     <p>© <span id="mv-year"></span> MeteoVeritas.</p>
   </footer>
 
-  <script>
+ <script>
   document.addEventListener("DOMContentLoaded", () => {
     const form = document.getElementById("historical-form");
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const zip = document.getElementById("zip-code").value.trim();
-      if (!zip) return alert("Please enter a location");
-      await getHistoricalWeather(zip);
+      const query = document.getElementById("zip-code").value.trim();
+      if (!query) return alert("Please enter a city or ZIP code.");
+      await getHistoricalWeather(query);
     });
   });
 
   async function getHistoricalWeather(query) {
     try {
-      // Step 1: Geocode using Open-Meteo
+      // Step 1: Geocode with Open-Meteo
       const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=1`);
       const geoData = await geoRes.json();
       const location = geoData.results?.[0];
@@ -70,53 +70,45 @@
 
       const { latitude, longitude, name, admin1 } = location;
 
-      // Step 2: Date range for last 3 days
+      // Step 2: Build date range (last 3 days)
       const today = new Date();
       const endDate = today.toISOString().split('T')[0];
       const startDate = new Date(today.setDate(today.getDate() - 3)).toISOString().split('T')[0];
 
-      // Step 3: Find closest NOAA station
-      const token = 'rJaSWNTgqJyQXbTHMKsbswkPNanMKiOP';
-      const stationRes = await fetch(`https://www.ncei.noaa.gov/cdo-web/api/v2/stations?datasetid=GHCND&limit=1&sortfield=distance&sortorder=asc&units=standard&extent=${latitude - 0.1},${longitude - 0.1},${latitude + 0.1},${longitude + 0.1}`, {
-        headers: { token }
+      // Step 3: Fetch historical weather from Meteostat
+      const response = await fetch(`https://meteostat.p.rapidapi.com/point/daily?lat=${latitude}&lon=${longitude}&start=${startDate}&end=${endDate}&units=imperial`, {
+        method: 'GET',
+        headers: {
+          'x-rapidapi-host': 'meteostat.p.rapidapi.com',
+          'x-rapidapi-key': '4500430017msh37a9cc063754634p1bd356jsn1122cd12aa3e' // 🔐 your key here
+        }
       });
 
-      const stationData = await stationRes.json();
-      const stationId = stationData.results?.[0]?.id;
-      if (!stationId) {
-        alert("No nearby NOAA station found.");
+      const data = await response.json();
+      if (!data.data || data.data.length === 0) {
+        alert("No historical data available for this location.");
         return;
       }
 
-      // Step 4: Fetch weather data
-      const url = `https://www.ncei.noaa.gov/cdo-web/api/v2/data?datasetid=GHCND&stationid=${stationId}&startdate=${startDate}&enddate=${endDate}&units=standard&limit=1000`;
-      const dataRes = await fetch(url, { headers: { token } });
-      const dataJson = await dataRes.json();
-
-      const grouped = {};
-      for (const item of dataJson.results) {
-        if (!grouped[item.date]) grouped[item.date] = {};
-        grouped[item.date][item.datatype] = item.value;
-      }
-
+      // Step 4: Render the cards
       const container = document.getElementById("weather-history");
       container.innerHTML = `<h3>Past 3 Days: ${name}, ${admin1}</h3>`;
 
-      Object.entries(grouped).forEach(([date, values]) => {
+      data.data.forEach(day => {
         const card = document.createElement("div");
         card.className = "history-card";
         card.innerHTML = `
-          <strong>${date.split('T')[0]}</strong><br>
-          High: ${values.TMAX ? (values.TMAX / 10).toFixed(1) : '—'} °F<br>
-          Low: ${values.TMIN ? (values.TMIN / 10).toFixed(1) : '—'} °F<br>
-          Precip: ${values.PRCP ? (values.PRCP / 254).toFixed(2) : '0.00'} in
+          <strong>${day.date}</strong><br>
+          High: ${day.tmax ?? '—'} °F<br>
+          Low: ${day.tmin ?? '—'} °F<br>
+          Precip: ${day.prcp ?? 0} in
         `;
         container.appendChild(card);
       });
 
     } catch (error) {
       console.error("Error getting weather history:", error);
-      alert("Could not load historical data. Please check the location and try again.");
+      alert("Failed to load historical data.");
     }
   }
 </script>
