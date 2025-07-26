@@ -59,8 +59,8 @@
 
     async function getHistoricalWeather(zipCode) {
       try {
-        const openCageKey = 'ae25ba5a07e14df698eb46c4cb0296a3';
-        const geoRes = await fetch(`https://api.opencagedata.com/geocode/v1/json?q=${zipCode}&key=${openCageKey}`);
+        const openCageKey = 'YOUR_OPENCAGE_API_KEY';
+        const geoRes = await fetch(`https://api.opencagedata.com/geocode/v1/json?q=${zipCode}&key=${openCageKey}&countrycode=us&limit=1`);
         const geoData = await geoRes.json();
         if (!geoData.results.length) {
           alert("Could not find location for ZIP code.");
@@ -70,8 +70,9 @@
         const result = geoData.results[0];
         const latitude = result.geometry.lat;
         const longitude = result.geometry.lng;
-        const name = result.components.city || result.components.town || result.components.village || "Unknown";
-        const admin1 = result.components.state || "Unknown";
+        const components = result.components;
+        const name = components.city || components.town || components.village || components.county || "Unknown";
+        const admin1 = components.state || "Unknown";
 
         const today = new Date();
         const endDate = today.toISOString().split('T')[0];
