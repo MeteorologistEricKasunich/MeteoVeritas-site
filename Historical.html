@@ -42,7 +42,7 @@
   </main>
 
   <footer class="mv-footer">
-    <p>Data: Meteostat API via RapidAPI & OpenCage Geocoding.</p>
+    <p>Data: NOAA NCEI API & OpenCage Geocoding.</p>
     <p>© <span id="mv-year"></span> MeteoVeritas.</p>
   </footer>
 
@@ -78,30 +78,45 @@
         const endDate = today.toISOString().split('T')[0];
         const startDate = new Date(today.setDate(today.getDate() - 3)).toISOString().split('T')[0];
 
-        const apiKey = '4500430017msh37a9cc063754634p1bd356jsn1122cd12aa3e';
-        const url = `https://meteostat.p.rapidapi.com/point/daily?lat=${latitude}&lon=${longitude}&start=${startDate}&end=${endDate}&units=imperial`;
-        const historyRes = await fetch(url, {
-          headers: {
-            'x-rapidapi-host': 'meteostat.p.rapidapi.com',
-            'x-rapidapi-key': apiKey
-          }
+        const token = 'rJaSWNTgqJyQXbTHMKsbswkPNanMKiOP';
+        const stationRes = await fetch(`https://www.ncei.noaa.gov/cdo-web/api/v2/stations?datasetid=GHCND&limit=1&sortfield=distance&sortorder=asc&units=standard&extent=${latitude - 0.1},${longitude - 0.1},${latitude + 0.1},${longitude + 0.1}`, {
+          headers: { token }
         });
 
-        const historyData = await historyRes.json();
+        const stationData = await stationRes.json();
+        const stationId = stationData.results?.[0]?.id;
+        if (!stationId) {
+          alert("No nearby NOAA station found.");
+          return;
+        }
+
+        const url = `https://www.ncei.noaa.gov/cdo-web/api/v2/data?datasetid=GHCND&stationid=${stationId}&startdate=${startDate}&enddate=${endDate}&units=standard&limit=1000`;
+        const dataRes = await fetch(url, {
+          headers: { token }
+        });
+
+        const dataJson = await dataRes.json();
+        const grouped = {};
+        for (const item of dataJson.results) {
+          if (!grouped[item.date]) grouped[item.date] = {};
+          grouped[item.date][item.datatype] = item.value;
+        }
+
         const container = document.getElementById("weather-history");
         container.innerHTML = `<h3>Past 3 Days: ${name}, ${admin1}</h3>`;
 
-        historyData.data.forEach(day => {
+        Object.entries(grouped).forEach(([date, values]) => {
           const card = document.createElement("div");
           card.className = "history-card";
           card.innerHTML = `
-            <strong>${day.date}</strong><br>
-            High: ${day.tmax ?? '-'} °F<br>
-            Low: ${day.tmin ?? '-'} °F<br>
-            Precip: ${day.prcp ?? 0} in
+            <strong>${date.split('T')[0]}</strong><br>
+            High: ${(values.TMAX / 10).toFixed(1)} °F<br>
+            Low: ${(values.TMIN / 10).toFixed(1)} °F<br>
+            Precip: ${values.PRCP ? (values.PRCP / 254).toFixed(2) : '0.00'} in
           `;
           container.appendChild(card);
         });
+
       } catch (error) {
         console.error("Error getting weather history:", error);
         alert("Could not load historical data. Please check the ZIP code or try again later.");
