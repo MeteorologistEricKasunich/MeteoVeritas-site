@@ -59,20 +59,25 @@
 
     async function getHistoricalWeather(zipCode) {
       try {
-        const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?postal_code=${zipCode}&country=US`);
+        const geoRes = await fetch(`https://api.zippopotam.us/us/${zipCode}`);
         const geoData = await geoRes.json();
-        const location = geoData.results?.[0];
-        if (!location) {
+        const place = geoData.places?.[0];
+        if (!place) {
           alert("Could not find location for ZIP code.");
           return;
         }
 
-        const { latitude, longitude, name, admin1 } = location;
+        const latitude = parseFloat(place.latitude);
+        const longitude = parseFloat(place.longitude);
+        const name = place["place name"];
+        const admin1 = place["state abbreviation"];
+
         const today = new Date();
         const endDate = today.toISOString().split('T')[0];
         const startDate = new Date(today.setDate(today.getDate() - 3)).toISOString().split('T')[0];
 
-        const apiKey = '4500430017msh37a9cc063754634p1bd356jsn1122cd12aa3e';
+        const apiKey = '4500430017msh37a9cc063754634p1bd356jsn1122cd12aa3e'
+';
         const url = `https://meteostat.p.rapidapi.com/point/daily?lat=${latitude}&lon=${longitude}&start=${startDate}&end=${endDate}&units=imperial`;
         const historyRes = await fetch(url, {
           headers: {
@@ -98,6 +103,7 @@
         });
       } catch (error) {
         console.error("Error getting weather history:", error);
+        alert("Could not load historical data. Please check the ZIP code or try again later.");
       }
     }
   </script>
