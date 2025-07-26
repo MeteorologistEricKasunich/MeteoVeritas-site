@@ -68,6 +68,7 @@
         }
 
         const { latitude, longitude, name, admin1 } = location;
+
         const today = new Date();
         const endDate = today.toISOString().split('T')[0];
         const startDate = new Date(today.setDate(today.getDate() - 3)).toISOString().split('T')[0];
@@ -98,6 +99,7 @@
         });
       } catch (error) {
         console.error("Error getting weather history:", error);
+        alert("Could not load historical data. Please check the ZIP code or try again later.");
       }
     }
   </script>
