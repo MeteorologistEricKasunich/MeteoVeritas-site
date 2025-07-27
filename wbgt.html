@@ -5,6 +5,7 @@
   <title>WBGT Center | MeteoVeritas</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="/assets/css/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     .wbgt-output {
       margin-top: 20px;
@@ -26,19 +27,6 @@
       vertical-align: top;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
-    .wbgt-card strong {
-      display: block;
-      font-size: 1.1em;
-      margin-bottom: 4px;
-    }
-    .wbgt-card .date-label {
-      font-size: 0.9em;
-      color: #555;
-      margin-bottom: 6px;
-    }
-    .wbgt-card .risk-low { color: green; }
-    .wbgt-card .risk-moderate { color: orange; }
-    .wbgt-card .risk-high { color: red; }
     .legend {
       margin-top: 10px;
       padding: 10px;
@@ -53,8 +41,15 @@
     .legend li {
       margin-bottom: 5px;
     }
+    .chart-container {
+      max-width: 100%;
+      margin-top: 30px;
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+    }
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <header class="mv-header">
@@ -71,7 +66,8 @@
   <main class="mv-weather-wrapper">
     <h1>Wet Bulb Globe Temperature (WBGT)</h1>
     <p><strong>What is WBGT?</strong><br>
-    WBGT stands for Wet Bulb Globe Temperature — a measure that combines temperature, humidity, wind, and solar radiation to assess heat stress risk. It's more accurate than the heat index for evaluating safety during outdoor activity and labor. Our WBGT estimates use temperature and dew point data to help you stay informed and safe.</p>
+      WBGT stands for Wet Bulb Globe Temperature — a measure that combines temperature, humidity, wind, and solar radiation to assess heat stress risk. It's more accurate than the heat index for evaluating safety during outdoor activity and labor. Our WBGT estimates use temperature and dew point data to help you stay informed and safe.
+    </p>
 
     <div class="legend">
       <strong>WBGT Risk Levels:</strong>
@@ -88,7 +84,9 @@
     </form>
 
     <div id="wbgt-results" class="wbgt-output"></div>
-    <canvas id="wbgtChart" width="100%" height="300"></canvas>
+    <div class="chart-container">
+      <canvas id="wbgtChart" height="100"></canvas>
+    </div>
   </main>
 
   <footer class="mv-footer">
@@ -98,8 +96,7 @@
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-      const year = new Date().getFullYear();
-      document.getElementById("mv-year").textContent = year;
+      document.getElementById("mv-year").textContent = new Date().getFullYear();
 
       document.getElementById("wbgt-form").addEventListener("submit", async (e) => {
         e.preventDefault();
@@ -116,8 +113,7 @@
         }
 
         const { latitude, longitude, name, admin1, timezone } = place;
-
-        const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&hourly=temperature_2m,dewpoint_2m,windspeed_10m,cloudcover&timezone=${timezone}`);
+        const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&hourly=temperature_2m,dewpoint_2m&timezone=${timezone}`);
         const weatherData = await weatherRes.json();
 
         const times = weatherData.hourly.time;
@@ -127,9 +123,12 @@
         const container = document.getElementById("wbgt-results");
         container.innerHTML = `<h3>Estimated WBGT for ${name}, ${admin1}</h3>`;
 
+        const chartLabels = [];
+        const chartWBGTs = [];
+
         for (let i = 0; i < times.length; i++) {
-          const localDate = new Date(times[i]);
-          const hour = localDate.getHours();
+          const dateObj = new Date(times[i]);
+          const hour = dateObj.getHours();
           if (hour < 12 || hour > 17) continue;
 
           const tempF = (tempsC[i] * 9/5 + 32).toFixed(1);
@@ -140,8 +139,11 @@
           if (wbgt >= 82 && wbgt < 88) { risk = "Moderate"; riskClass = "risk-moderate"; }
           if (wbgt >= 88) { risk = "High"; riskClass = "risk-high"; }
 
-          const timeStr = localDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
-          const dateStr = localDate.toLocaleDateString();
+          const timeStr = dateObj.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
+          const dateStr = dateObj.toLocaleDateString();
+
+          chartLabels.push(`${timeStr}`);
+          chartWBGTs.push(wbgt);
 
           const card = document.createElement("div");
           card.className = `wbgt-card ${riskClass}`;
@@ -155,57 +157,41 @@
           `;
           container.appendChild(card);
         }
+
+        // Chart.js graph
+        const ctx = document.getElementById('wbgtChart').getContext('2d');
+        if (window.wbgtChartInstance) window.wbgtChartInstance.destroy();
+        window.wbgtChartInstance = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: chartLabels,
+            datasets: [{
+              label: 'WBGT (°F)',
+              data: chartWBGTs,
+              fill: true,
+              borderColor: 'rgba(255,99,132,1)',
+              backgroundColor: 'rgba(255,99,132,0.1)',
+              tension: 0.3,
+              pointRadius: 4,
+              pointHoverRadius: 6
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { position: 'top' },
+              title: { display: true, text: 'WBGT Forecast (12–5 PM)' }
+            },
+            scales: {
+              y: {
+                title: { display: true, text: 'WBGT (°F)' },
+                beginAtZero: false
+              }
+            }
+          }
+        });
       });
     });
-    // Collect chart data
-const chartLabels = [];
-const chartData = [];
-
-for (let i = 0; i < times.length; i++) {
-  const localDate = new Date(times[i]);
-  const hour = localDate.getHours();
-  if (hour < 12 || hour > 17) continue;
-
-  const tempF = (tempsC[i] * 9/5 + 32).toFixed(1);
-  const dewF = (dewpointsC[i] * 9/5 + 32).toFixed(1);
-  const wbgt = (parseFloat(tempF) + parseFloat(dewF) * 0.4).toFixed(1);
-
-  const timeStr = localDate.toLocaleTimeString([], { hour: 'numeric', hour12: true });
-  chartLabels.push(timeStr);
-  chartData.push(wbgt);
-}
-
-// Draw Chart
-const ctx = document.getElementById("wbgtChart").getContext("2d");
-new Chart(ctx, {
-  type: 'line',
-  data: {
-    labels: chartLabels,
-    datasets: [{
-      label: 'WBGT (°F)',
-      data: chartData,
-      backgroundColor: 'rgba(255, 99, 132, 0.2)',
-      borderColor: 'red',
-      borderWidth: 2,
-      pointRadius: 4,
-      tension: 0.3,
-    }]
-  },
-  options: {
-    scales: {
-      y: {
-        beginAtZero: false,
-        suggestedMin: 70,
-        suggestedMax: 95
-      }
-    },
-    plugins: {
-      legend: { display: true },
-      tooltip: { enabled: true }
-    }
-  }
-});
-
   </script>
 </body>
 </html>
