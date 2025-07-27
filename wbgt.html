@@ -22,9 +22,23 @@
       border-radius: 8px;
       background-color: white;
       display: inline-block;
-      width: 180px;
+      width: 200px;
       vertical-align: top;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
+    .wbgt-card strong {
+      display: block;
+      font-size: 1.1em;
+      margin-bottom: 4px;
+    }
+    .wbgt-card .date-label {
+      font-size: 0.9em;
+      color: #555;
+      margin-bottom: 6px;
+    }
+    .wbgt-card .risk-low { color: green; }
+    .wbgt-card .risk-moderate { color: orange; }
+    .wbgt-card .risk-high { color: red; }
   </style>
 </head>
 <body>
@@ -83,15 +97,12 @@
         const tempsC = weatherData.hourly.temperature_2m;
         const dewpointsC = weatherData.hourly.dewpoint_2m;
 
-        const localNow = new Date();
-        const todayStr = localNow.toISOString().split("T")[0];
-
         const container = document.getElementById("wbgt-results");
         container.innerHTML = `<h3>Estimated WBGT for ${name}, ${admin1}</h3>`;
 
         for (let i = 0; i < times.length; i++) {
-          if (!times[i].startsWith(todayStr)) continue;
-          const hour = parseInt(times[i].split("T")[1].split(":"[0]));
+          const localDate = new Date(times[i]);
+          const hour = localDate.getHours();
           if (hour < 12 || hour > 17) continue;
 
           const tempF = (tempsC[i] * 9/5 + 32).toFixed(1);
@@ -102,14 +113,18 @@
           if (wbgt >= 82 && wbgt < 88) { risk = "Moderate"; riskClass = "risk-moderate"; }
           if (wbgt >= 88) { risk = "High"; riskClass = "risk-high"; }
 
+          const timeStr = localDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+          const dateStr = localDate.toLocaleDateString();
+
           const card = document.createElement("div");
           card.className = `wbgt-card ${riskClass}`;
           card.innerHTML = `
-            <strong>${times[i].split("T")[1]}</strong><br>
+            <div class="date-label">${dateStr}</div>
+            <strong>${timeStr}</strong>
             Temp: ${tempF} °F<br>
             Dew Pt: ${dewF} °F<br>
             WBGT: ${wbgt} °F<br>
-            Risk: ${risk}
+            <span class="${riskClass}">Risk: ${risk}</span>
           `;
           container.appendChild(card);
         }
