@@ -157,6 +157,55 @@
         }
       });
     });
+    // Collect chart data
+const chartLabels = [];
+const chartData = [];
+
+for (let i = 0; i < times.length; i++) {
+  const localDate = new Date(times[i]);
+  const hour = localDate.getHours();
+  if (hour < 12 || hour > 17) continue;
+
+  const tempF = (tempsC[i] * 9/5 + 32).toFixed(1);
+  const dewF = (dewpointsC[i] * 9/5 + 32).toFixed(1);
+  const wbgt = (parseFloat(tempF) + parseFloat(dewF) * 0.4).toFixed(1);
+
+  const timeStr = localDate.toLocaleTimeString([], { hour: 'numeric', hour12: true });
+  chartLabels.push(timeStr);
+  chartData.push(wbgt);
+}
+
+// Draw Chart
+const ctx = document.getElementById("wbgtChart").getContext("2d");
+new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: chartLabels,
+    datasets: [{
+      label: 'WBGT (°F)',
+      data: chartData,
+      backgroundColor: 'rgba(255, 99, 132, 0.2)',
+      borderColor: 'red',
+      borderWidth: 2,
+      pointRadius: 4,
+      tension: 0.3,
+    }]
+  },
+  options: {
+    scales: {
+      y: {
+        beginAtZero: false,
+        suggestedMin: 70,
+        suggestedMax: 95
+      }
+    },
+    plugins: {
+      legend: { display: true },
+      tooltip: { enabled: true }
+    }
+  }
+});
+
   </script>
 </body>
 </html>
