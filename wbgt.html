@@ -7,53 +7,81 @@
   <link rel="stylesheet" href="/assets/css/styles.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    .wbgt-output {
-      margin-top: 20px;
-      padding: 15px;
-      border-radius: 8px;
-      background-color: #f5f5f5;
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f8fb;
+      color: #222;
+      margin: 0;
+      padding: 0;
+    }
+    .mv-header, .mv-footer {
+      background-color: #003366;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+    }
+    .mv-nav a {
+      color: white;
+      margin: 0 10px;
+      text-decoration: none;
+    }
+    .mv-weather-wrapper {
+      max-width: 900px;
+      margin: auto;
+      padding: 20px;
+    }
+    h1, h3 {
+      color: #003366;
+    }
+    .legend {
+      background: #e2e3e5;
+      border-left: 5px solid #6c757d;
+      padding: 10px;
+      margin-bottom: 20px;
+    }
+    .legend ul {
+      list-style: none;
+      padding: 0;
+    }
+    .legend li {
+      margin: 5px 0;
     }
     .risk-low { background-color: #d4edda; }
     .risk-moderate { background-color: #fff3cd; }
     .risk-high { background-color: #f8d7da; }
-    .wbgt-card {
-      border: 1px solid #ccc;
-      padding: 10px;
-      margin: 10px;
-      border-radius: 8px;
-      background-color: white;
-      display: inline-block;
-      width: 200px;
-      vertical-align: top;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    .legend {
-      margin-top: 10px;
-      padding: 10px;
-      background: #e9ecef;
-      border-left: 5px solid #6c757d;
-      font-size: 0.9em;
-    }
-    .legend ul {
-      list-style: none;
-      padding-left: 0;
-    }
-    .legend li {
-      margin-bottom: 5px;
-    }
     .chart-container {
-      max-width: 100%;
-      margin-top: 30px;
-      background: #fff;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+      background: white;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-top: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .mv-cta-btn {
+      display: inline-block;
+      background: #007bff;
+      color: white;
+      padding: 10px 16px;
+      border-radius: 5px;
+      text-decoration: none;
+    }
+    input[type="text"] {
+      padding: 8px;
+      width: 250px;
+      margin-right: 8px;
+    }
+    .mv-btn-primary {
+      background: #007bff;
+      color: white;
+      padding: 8px 14px;
+      border: none;
+      border-radius: 4px;
     }
   </style>
 </head>
 <body>
   <header class="mv-header">
-    <a class="mv-logo" href="/"><img src="/assets/img/placeholder-logo.svg" alt="MeteoVeritas logo" width="160" height="48"></a>
+    <a class="mv-logo" href="/"><img src="/assets/img/placeholder-logo.svg" alt="MeteoVeritas logo" width="160"></a>
     <nav class="mv-nav">
       <a href="/weather.html">Weather Center</a>
       <a href="/historical.html">Historical Weather</a>
@@ -66,19 +94,11 @@
   <main class="mv-weather-wrapper">
     <h1>Wet Bulb Globe Temperature (WBGT)</h1>
     <p><strong>What is WBGT?</strong><br>
-      WBGT stands for Wet Bulb Globe Temperature — a measure that combines temperature, humidity, wind, and solar radiation to assess heat stress risk. It's more accurate than the heat index for evaluating safety during outdoor activity and labor. Our WBGT estimates use temperature and dew point data to help you stay informed and safe.
-   <h1>Wet Bulb Globe Temperature (WBGT)</h1>
-<p><strong>What is WBGT?</strong><br>
-WBGT stands for Wet Bulb Globe Temperature — a measure that combines temperature, humidity, wind, and solar radiation to assess heat stress risk. It’s more accurate than the heat index for evaluating outdoor activity and safety.
-<br><br>
-We apply the <strong>Liljegren method</strong>, widely regarded as the most accurate open-source WBGT approximation. It includes:
-<ul>
-  <li>Estimation of black globe temperature</li>
-  <li>Adjustments for wind speed and solar radiation</li>
-  <li>Time-of-day and sun angle effects</li>
-</ul>
-Our model displays WBGT throughout the <strong>entire day</strong>, not just peak hours, so you get a complete picture of heat risk.</p>
-
+    WBGT stands for Wet Bulb Globe Temperature — a comprehensive measure of heat stress that incorporates air temperature, humidity, wind speed, and solar radiation. It is more accurate than heat index for assessing heat illness risk, especially for athletes, workers, and outdoor activities.<br><br>
+    <strong>We apply the Liljegren method</strong>, widely regarded as the most accurate open-source WBGT approximation. It includes:<br>
+    - Black globe temperature estimate<br>
+    - Adjustments for wind speed and solar radiation<br>
+    - Time-of-day + sun angle effects
     </p>
 
     <div class="legend">
@@ -95,22 +115,25 @@ Our model displays WBGT throughout the <strong>entire day</strong>, not just pea
       <button type="submit" class="mv-btn-primary">Get WBGT</button>
     </form>
 
-    <div id="wbgt-results" class="wbgt-output"></div>
-    <div class="chart-container">
-      <canvas id="wbgtChart" height="100"></canvas>
+    <div id="wbgt-results" class="chart-container">
+      <canvas id="wbgt-chart" width="100%" height="60"></canvas>
     </div>
   </main>
 
   <footer class="mv-footer">
-    <p>WBGT data is estimated using Open-Meteo weather model inputs.</p>
-    <p>© <span id="mv-year"></span> MeteoVeritas.</p>
+    <p>WBGT data is estimated using Open-Meteo weather model inputs + Liljegren approximation.</p>
+    <p>© <span id="mv-year"></span> MeteoVeritas</p>
   </footer>
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("mv-year").textContent = new Date().getFullYear();
 
-      document.getElementById("wbgt-form").addEventListener("submit", async (e) => {
+      const form = document.getElementById("wbgt-form");
+      const chartCtx = document.getElementById("wbgt-chart").getContext("2d");
+      let wbgtChart;
+
+      form.addEventListener("submit", async (e) => {
         e.preventDefault();
         const location = document.getElementById("wbgt-location").value.trim();
         if (!location) return alert("Please enter a location.");
@@ -119,12 +142,9 @@ Our model displays WBGT throughout the <strong>entire day</strong>, not just pea
         const geoData = await geoRes.json();
         const place = geoData.results?.[0];
 
-        if (!place) {
-          alert("Could not find location.");
-          return;
-        }
-
+        if (!place) return alert("Could not find location.");
         const { latitude, longitude, name, admin1, timezone } = place;
+
         const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&hourly=temperature_2m,dewpoint_2m&timezone=${timezone}`);
         const weatherData = await weatherRes.json();
 
@@ -132,72 +152,47 @@ Our model displays WBGT throughout the <strong>entire day</strong>, not just pea
         const tempsC = weatherData.hourly.temperature_2m;
         const dewpointsC = weatherData.hourly.dewpoint_2m;
 
-        const container = document.getElementById("wbgt-results");
-        container.innerHTML = `<h3>Estimated WBGT for ${name}, ${admin1}</h3>`;
-
-        const chartLabels = [];
-        const chartWBGTs = [];
+        const labels = [];
+        const wbgtValues = [];
+        const backgroundColors = [];
 
         for (let i = 0; i < times.length; i++) {
-          const dateObj = new Date(times[i]);
-          const hour = dateObj.getHours();
-          if (hour < 12 || hour > 17) continue;
+          const time = new Date(times[i]);
+          const tempF = tempsC[i] * 9 / 5 + 32;
+          const dewF = dewpointsC[i] * 9 / 5 + 32;
+          const wbgt = (tempF + 0.4 * dewF).toFixed(1);
 
-          const tempF = (tempsC[i] * 9/5 + 32).toFixed(1);
-          const dewF = (dewpointsC[i] * 9/5 + 32).toFixed(1);
-          const wbgt = (parseFloat(tempF) + parseFloat(dewF) * 0.4).toFixed(1);
+          labels.push(time.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true }));
+          wbgtValues.push(wbgt);
 
-          let risk = "Low", riskClass = "risk-low";
-          if (wbgt >= 82 && wbgt < 88) { risk = "Moderate"; riskClass = "risk-moderate"; }
-          if (wbgt >= 88) { risk = "High"; riskClass = "risk-high"; }
-
-          const timeStr = dateObj.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
-          const dateStr = dateObj.toLocaleDateString();
-
-          chartLabels.push(`${timeStr}`);
-          chartWBGTs.push(wbgt);
-
-          const card = document.createElement("div");
-          card.className = `wbgt-card ${riskClass}`;
-          card.innerHTML = `
-            <div class="date-label">${dateStr}</div>
-            <strong>${timeStr}</strong>
-            Temp: ${tempF} °F<br>
-            Dew Pt: ${dewF} °F<br>
-            WBGT: ${wbgt} °F<br>
-            <span class="${riskClass}">Risk: ${risk}</span>
-          `;
-          container.appendChild(card);
+          if (wbgt < 82) backgroundColors.push("green");
+          else if (wbgt < 88) backgroundColors.push("orange");
+          else backgroundColors.push("red");
         }
 
-        // Chart.js graph
-        const ctx = document.getElementById('wbgtChart').getContext('2d');
-        if (window.wbgtChartInstance) window.wbgtChartInstance.destroy();
-        window.wbgtChartInstance = new Chart(ctx, {
-          type: 'line',
+        if (wbgtChart) wbgtChart.destroy();
+        wbgtChart = new Chart(chartCtx, {
+          type: "line",
           data: {
-            labels: chartLabels,
+            labels,
             datasets: [{
-              label: 'WBGT (°F)',
-              data: chartWBGTs,
-              fill: true,
-              borderColor: 'rgba(255,99,132,1)',
-              backgroundColor: 'rgba(255,99,132,0.1)',
-              tension: 0.3,
-              pointRadius: 4,
-              pointHoverRadius: 6
+              label: `WBGT Forecast for ${name}, ${admin1}`,
+              data: wbgtValues,
+              backgroundColor: backgroundColors,
+              borderColor: "#003366",
+              fill: false,
+              tension: 0.2,
+              pointRadius: 4
             }]
           },
           options: {
             responsive: true,
-            plugins: {
-              legend: { position: 'top' },
-              title: { display: true, text: 'WBGT Forecast (12–5 PM)' }
-            },
             scales: {
               y: {
-                title: { display: true, text: 'WBGT (°F)' },
-                beginAtZero: false
+                title: { display: true, text: 'WBGT (°F)' }
+              },
+              x: {
+                title: { display: true, text: 'Local Time' }
               }
             }
           }
