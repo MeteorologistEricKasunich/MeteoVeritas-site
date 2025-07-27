@@ -39,6 +39,20 @@
     .wbgt-card .risk-low { color: green; }
     .wbgt-card .risk-moderate { color: orange; }
     .wbgt-card .risk-high { color: red; }
+    .legend {
+      margin-top: 10px;
+      padding: 10px;
+      background: #e9ecef;
+      border-left: 5px solid #6c757d;
+      font-size: 0.9em;
+    }
+    .legend ul {
+      list-style: none;
+      padding-left: 0;
+    }
+    .legend li {
+      margin-bottom: 5px;
+    }
   </style>
 </head>
 <body>
@@ -55,7 +69,18 @@
 
   <main class="mv-weather-wrapper">
     <h1>Wet Bulb Globe Temperature (WBGT)</h1>
-    <p>Enter a location to see estimated WBGT values and heat safety risk levels.</p>
+    <p><strong>What is WBGT?</strong><br>
+    WBGT stands for Wet Bulb Globe Temperature — a measure that combines temperature, humidity, wind, and solar radiation to assess heat stress risk. It's more accurate than the heat index for evaluating safety during outdoor activity and labor. Our WBGT estimates use temperature and dew point data to help you stay informed and safe.</p>
+
+    <div class="legend">
+      <strong>WBGT Risk Levels:</strong>
+      <ul>
+        <li><span style="color:green;">Low:</span> WBGT below 82°F — Minimal risk</li>
+        <li><span style="color:orange;">Moderate:</span> WBGT 82°F to 87.9°F — Use caution, hydrate</li>
+        <li><span style="color:red;">High:</span> WBGT 88°F+ — High risk of heat illness</li>
+      </ul>
+    </div>
+
     <form id="wbgt-form">
       <input type="text" id="wbgt-location" placeholder="e.g., Dunedin, FL or 34698">
       <button type="submit" class="mv-btn-primary">Get WBGT</button>
@@ -113,7 +138,7 @@
           if (wbgt >= 82 && wbgt < 88) { risk = "Moderate"; riskClass = "risk-moderate"; }
           if (wbgt >= 88) { risk = "High"; riskClass = "risk-high"; }
 
-          const timeStr = localDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+          const timeStr = localDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
           const dateStr = localDate.toLocaleDateString();
 
           const card = document.createElement("div");
