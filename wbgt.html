@@ -1,46 +1,107 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<title>WBGT Center | MeteoVeritas</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="/assets/css/styles.css">
+  <meta charset="utf-8">
+  <title>WBGT Center | MeteoVeritas</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/assets/css/styles.css">
+  <style>
+    .wbgt-output {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 8px;
+      background-color: #f5f5f5;
+    }
+    .risk-low { background-color: #d4edda; }
+    .risk-moderate { background-color: #fff3cd; }
+    .risk-high { background-color: #f8d7da; }
+    .wbgt-card {
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin: 10px;
+      border-radius: 8px;
+      background-color: white;
+      display: inline-block;
+      width: 180px;
+      vertical-align: top;
+    }
+  </style>
 </head>
 <body>
-<header class="mv-header">
-  <a class="mv-logo" href="/"><img src="/assets/img/placeholder-logo.svg" alt="MeteoVeritas logo" width="160" height="48"></a>
-  <nav class="mv-nav">
-    <a href="/weather.html">Weather Center</a>
-    <a href="/wbgt.html" class="active">WBGT Center</a>
-    <a href="/consulting.html">Consulting</a>
-    <a href="/contact.html" class="mv-cta-btn">Request Services</a>
-  </nav>
-</header>
+  <header class="mv-header">
+    <a class="mv-logo" href="/"><img src="/assets/img/placeholder-logo.svg" alt="MeteoVeritas logo" width="160" height="48"></a>
+    <nav class="mv-nav">
+      <a href="/weather.html">Weather Center</a>
+      <a href="/historical.html">Historical Weather</a>
+      <a href="/wbgt.html" class="active">WBGT Center</a>
+      <a href="/consulting.html">Consulting</a>
+      <a href="/contact.html" class="mv-cta-btn">Request Services</a>
+    </nav>
+  </header>
 
-<main class="mv-wbgt-wrapper">
-  <h1>Wet Bulb Globe Temperature (WBGT)</h1>
-  <p>WBGT is the gold‑standard heat stress index for outdoor work &amp; athletics. Enter a location below (feature coming soon). For now, use the contact form to request a custom WBGT forecast.</p>
+  <main class="mv-weather-wrapper">
+    <h1>Wet Bulb Globe Temperature (WBGT)</h1>
+    <p>Enter a location to see estimated WBGT values and heat safety risk levels.</p>
+    <form id="wbgt-form">
+      <input type="text" id="wbgt-location" placeholder="e.g., Dunedin, FL or 34698">
+      <button type="submit" class="mv-btn-primary">Get WBGT</button>
+    </form>
 
-  <form id="mv-wbgt-search">
-    <input type="text" id="mv-wbgt-location" placeholder="City, State or Lat, Lon">
-    <button type="submit" class="mv-btn-primary" disabled>Coming Soon</button>
-  </form>
+    <div id="wbgt-results" class="wbgt-output"></div>
+  </main>
 
-  <section class="mv-wbgt-info">
-    <h2>WBGT Risk Bands</h2>
-    <ul class="mv-wbgt-bands">
-      <li><span class="band band-green"></span> Low</li>
-      <li><span class="band band-yellow"></span> Moderate</li>
-      <li><span class="band band-orange"></span> High</li>
-      <li><span class="band band-red"></span> Very High</li>
-      <li><span class="band band-purple"></span> Extreme</li>
-    </ul>
-  </section>
-</main>
+  <footer class="mv-footer">
+    <p>WBGT data is estimated using Open-Meteo weather model inputs.</p>
+    <p>© <span id="mv-year"></span> MeteoVeritas.</p>
+  </footer>
 
-<footer class="mv-footer">
-  <p>© <span id="mv-year"></span> MeteoVeritas.</p>
-</footer>
-<script src="/assets/js/main.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const year = new Date().getFullYear();
+      document.getElementById("mv-year").textContent = year;
+
+      document.getElementById("wbgt-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const location = document.getElementById("wbgt-location").value.trim();
+        if (!location) return alert("Please enter a location.");
+
+        const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(location)}&count=1`);
+        const geoData = await geoRes.json();
+        const place = geoData.results?.[0];
+
+        if (!place) {
+          alert("Could not find location.");
+          return;
+        }
+
+        const { latitude, longitude, name, admin1 } = place;
+        const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&hourly=temperature_2m,dewpoint_2m,windspeed_10m,cloudcover&timezone=auto`);
+        const weatherData = await weatherRes.json();
+        const hours = weatherData.hourly.time;
+        const temps = weatherData.hourly.temperature_2m;
+        const dewpoints = weatherData.hourly.dewpoint_2m;
+
+        const container = document.getElementById("wbgt-results");
+        container.innerHTML = `<h3>Estimated WBGT for ${name}, ${admin1}</h3>`;
+
+        for (let i = 12; i < 18; i++) { // Show 12 PM to 5 PM only
+          const wbgt = (temps[i] + dewpoints[i] * 0.4).toFixed(1); // Basic estimate
+          let risk = "Low";
+          let riskClass = "risk-low";
+          if (wbgt >= 82 && wbgt < 88) { risk = "Moderate"; riskClass = "risk-moderate"; }
+          if (wbgt >= 88) { risk = "High"; riskClass = "risk-high"; }
+
+          const card = document.createElement("div");
+          card.className = `wbgt-card ${riskClass}`;
+          card.innerHTML = `
+            <strong>${hours[i].split("T")[1]}</strong><br>
+            WBGT: ${wbgt} °F<br>
+            Risk: ${risk}
+          `;
+          container.appendChild(card);
+        }
+      });
+    });
+  </script>
 </body>
 </html>
