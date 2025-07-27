@@ -74,27 +74,40 @@
           return;
         }
 
-        const { latitude, longitude, name, admin1 } = place;
-        const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&hourly=temperature_2m,dewpoint_2m,windspeed_10m,cloudcover&timezone=auto`);
+        const { latitude, longitude, name, admin1, timezone } = place;
+
+        const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&hourly=temperature_2m,dewpoint_2m,windspeed_10m,cloudcover&timezone=${timezone}`);
         const weatherData = await weatherRes.json();
-        const hours = weatherData.hourly.time;
-        const temps = weatherData.hourly.temperature_2m;
-        const dewpoints = weatherData.hourly.dewpoint_2m;
+
+        const times = weatherData.hourly.time;
+        const tempsC = weatherData.hourly.temperature_2m;
+        const dewpointsC = weatherData.hourly.dewpoint_2m;
+
+        const localNow = new Date();
+        const todayStr = localNow.toISOString().split("T")[0];
 
         const container = document.getElementById("wbgt-results");
         container.innerHTML = `<h3>Estimated WBGT for ${name}, ${admin1}</h3>`;
 
-        for (let i = 12; i < 18; i++) { // Show 12 PM to 5 PM only
-          const wbgt = (temps[i] + dewpoints[i] * 0.4).toFixed(1); // Basic estimate
-          let risk = "Low";
-          let riskClass = "risk-low";
+        for (let i = 0; i < times.length; i++) {
+          if (!times[i].startsWith(todayStr)) continue;
+          const hour = parseInt(times[i].split("T")[1].split(":"[0]));
+          if (hour < 12 || hour > 17) continue;
+
+          const tempF = (tempsC[i] * 9/5 + 32).toFixed(1);
+          const dewF = (dewpointsC[i] * 9/5 + 32).toFixed(1);
+          const wbgt = (parseFloat(tempF) + parseFloat(dewF) * 0.4).toFixed(1);
+
+          let risk = "Low", riskClass = "risk-low";
           if (wbgt >= 82 && wbgt < 88) { risk = "Moderate"; riskClass = "risk-moderate"; }
           if (wbgt >= 88) { risk = "High"; riskClass = "risk-high"; }
 
           const card = document.createElement("div");
           card.className = `wbgt-card ${riskClass}`;
           card.innerHTML = `
-            <strong>${hours[i].split("T")[1]}</strong><br>
+            <strong>${times[i].split("T")[1]}</strong><br>
+            Temp: ${tempF} °F<br>
+            Dew Pt: ${dewF} °F<br>
             WBGT: ${wbgt} °F<br>
             Risk: ${risk}
           `;
