@@ -5,6 +5,13 @@
   <title>WBGT Center | MeteoVeritas</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="/assets/css/styles.css">
+
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
+  integrity="sha512-sA+z0pT9PcP0DUJQdydL9RzTcAGqg6Lfqka0kCRGQRYXJG3wVX+QzZ+4gLskKJG3R0rJ3Xwnb5yV9XoB6mf+lw=="
+  crossorigin=""
+/>
   <style>
     .wbgt-output {
       margin-top: 20px;
@@ -61,11 +68,11 @@
     }
 
     #wbgt-map {
-      height: 400px;
-      margin-top: 20px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-    }
+  height: 400px;
+  margin-top: 20px;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+}
   </style>
 </head>
 <body>
@@ -209,31 +216,32 @@
       });
 
       function initMap(lat, lon) {
-        const mapDiv = document.getElementById("wbgt-map");
-        mapDiv.innerHTML = "";
-        const map = L.map(mapDiv).setView([lat, lon], 8);
+  const mapDiv = document.getElementById("wbgt-map");
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
+  // Fix glitching: reset container if already initialized
+  if (mapDiv._leaflet_id) {
+    mapDiv._leaflet_id = null;
+  }
 
-        L.marker([lat, lon]).addTo(map).bindPopup("Selected Location").openPopup();
+  const map = L.map(mapDiv).setView([lat, lon], 8);
 
-        // NWS Heat Warning Layer
-        L.tileLayer.wms("https://opengeo.ncep.noaa.gov/geoserver/wwa/wms", {
-          layers: "wwa:heat_advisory",
-          format: "image/png",
-          transparent: true,
-          attribution: "NOAA WWA"
-        }).addTo(map);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
+  }).addTo(map);
 
-        // Solar radiation overlay
-        L.tileLayer("https://tiles.arcgis.com/tiles/Wl7Y1m92PbjtJs5n/arcgis/rest/services/NASA_Solar_Exposure/MapServer/tile/{z}/{y}/{x}", {
-          attribution: "NASA Solar Exposure",
-          opacity: 0.4
-        }).addTo(map);
-      }
-    });
-  </script>
-</body>
-</html>
+  L.marker([lat, lon]).addTo(map).bindPopup("Selected Location").openPopup();
+
+  // NWS Heat Warning Layer
+  L.tileLayer.wms("https://opengeo.ncep.noaa.gov/geoserver/wwa/wms", {
+    layers: "wwa:heat_advisory",
+    format: "image/png",
+    transparent: true,
+    attribution: "NOAA WWA"
+  }).addTo(map);
+
+  // Solar Radiation Overlay
+  L.tileLayer("https://tiles.arcgis.com/tiles/Wl7Y1m92PbjtJs5n/arcgis/rest/services/NASA_Solar_Exposure/MapServer/tile/{z}/{y}/{x}", {
+    attribution: "NASA Solar Exposure",
+    opacity: 0.4
+  }).addTo(map);
+}
