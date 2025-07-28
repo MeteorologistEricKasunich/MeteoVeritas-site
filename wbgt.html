@@ -5,45 +5,36 @@
   <title>WBGT Center | MeteoVeritas</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="/assets/css/styles.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    .wbgt-output {
-      margin-top: 20px;
-    }
-    .wbgt-card {
-      border: 1px solid #ccc;
-      padding: 10px;
-      margin: 10px;
+    #map {
+      height: 300px;
+      margin: 20px 0;
       border-radius: 8px;
-      background-color: white;
-      display: inline-block;
-      width: 200px;
-      vertical-align: top;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
     }
     .legend {
       margin-top: 10px;
       padding: 10px;
       background: #e9ecef;
       border-left: 5px solid #6c757d;
-      font-size: 0.9em;
     }
-    .legend ul {
-      list-style: none;
-      padding-left: 0;
+    .chart-container {
+      width: 100%;
+      max-width: 1000px;
+      margin: auto;
     }
-    .legend li {
-      margin-bottom: 5px;
-    }
-    #wbgt-map {
-      height: 400px;
-      margin: 20px 0;
+    canvas {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
   </style>
 </head>
 <body>
   <header class="mv-header">
-    <a class="mv-logo" href="/"><img src="/assets/img/placeholder-logo.svg" alt="MeteoVeritas logo" width="160" height="48"></a>
+    <a class="mv-logo" href="/"><img src="/assets/img/placeholder-logo.svg" alt="MeteoVeritas logo" width="160"></a>
     <nav class="mv-nav">
       <a href="/weather.html">Weather Center</a>
       <a href="/historical.html">Historical Weather</a>
@@ -56,8 +47,14 @@
   <main class="mv-weather-wrapper">
     <h1>Wet Bulb Globe Temperature (WBGT)</h1>
     <p><strong>What is WBGT?</strong><br>
-    WBGT stands for Wet Bulb Globe Temperature — a measure that combines temperature, humidity, wind, and solar radiation to assess heat stress risk. It's more accurate than the heat index for evaluating safety during outdoor activity and labor. Our WBGT estimates use temperature and dew point data to help you stay informed and safe.</p>
-    <p><strong>We’ll apply the Liljegren method</strong>, widely regarded as the most accurate open-source WBGT approximation. It includes black globe temperature estimation, adjustments for wind speed and solar radiation, and time-of-day sun angle effects.</p>
+    WBGT stands for Wet Bulb Globe Temperature — a measure that combines temperature, humidity, wind, and solar radiation to assess heat stress risk. It's more accurate than the heat index for evaluating safety during outdoor activity and labor.<br><br>
+    <strong>We apply the Liljegren method</strong>, widely regarded as the most accurate open-source WBGT approximation. It includes:
+    <ul>
+      <li>Black globe temperature estimate</li>
+      <li>Adjustments for wind speed and solar radiation</li>
+      <li>Time-of-day + sun angle effects</li>
+    </ul>
+    </p>
 
     <div class="legend">
       <strong>WBGT Risk Levels:</strong>
@@ -69,147 +66,90 @@
     </div>
 
     <form id="wbgt-form">
-      <input type="text" id="wbgt-location" placeholder="e.g., Dunedin, FL or 34698">
+      <input type="text" id="wbgt-location" placeholder="Enter ZIP or City">
       <button type="submit" class="mv-btn-primary">Get WBGT</button>
     </form>
 
-    <div id="wbgt-results" class="wbgt-output"></div>
+    <div id="map"></div>
 
-    <canvas id="wbgtChart" width="100%" height="40"></canvas>
-
-    <button id="downloadCSV" class="mv-btn-secondary" style="margin-top: 20px;">Download CSV</button>
-
-    <div id="wbgt-map"></div>
+    <div class="chart-container">
+      <canvas id="wbgt-chart" height="100"></canvas>
+    </div>
   </main>
 
   <footer class="mv-footer">
-    <p>WBGT data is estimated using Open-Meteo weather model inputs.</p>
+    <p>WBGT estimates powered by Open-Meteo, charted by Chart.js, mapped via Leaflet.js</p>
     <p>© <span id="mv-year"></span> MeteoVeritas.</p>
   </footer>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
-    document.getElementById("mv-year").textContent = new Date().getFullYear();
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("mv-year").textContent = new Date().getFullYear();
+      let chart;
 
-    let wbgtData = [];
-
-    document.getElementById("wbgt-form").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const locationInput = document.getElementById("wbgt-location").value.trim();
-      if (!locationInput) return alert("Please enter a location.");
-
-      const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(locationInput)}&count=1`);
-      const geoData = await geoRes.json();
-      const place = geoData.results?.[0];
-
-      if (!place) return alert("Could not find location.");
-
-      const { latitude, longitude, name, admin1, timezone } = place;
-      const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&hourly=temperature_2m,dewpoint_2m,windspeed_10m,cloudcover&timezone=${timezone}`);
-      const weatherData = await weatherRes.json();
-
-      const times = weatherData.hourly.time;
-      const tempsC = weatherData.hourly.temperature_2m;
-      const dewpointsC = weatherData.hourly.dewpoint_2m;
-
-      const container = document.getElementById("wbgt-results");
-      container.innerHTML = `<h3>Estimated WBGT for ${name}, ${admin1}</h3>`;
-
-      wbgtData = [];
-
-      for (let i = 0; i < times.length; i++) {
-        const time = new Date(times[i]);
-        const tempF = tempsC[i] * 9/5 + 32;
-        const dewF = dewpointsC[i] * 9/5 + 32;
-        const wbgt = tempF + dewF * 0.4;
-
-        let risk = "Low", color = "green";
-        if (wbgt >= 82 && wbgt < 88) { risk = "Moderate"; color = "orange"; }
-        if (wbgt >= 88) { risk = "High"; color = "red"; }
-
-        wbgtData.push({
-          time: time,
-          wbgt: wbgt.toFixed(1),
-          temp: tempF.toFixed(1),
-          dew: dewF.toFixed(1),
-          risk,
-          color
-        });
-      }
-
-      renderChart();
-      renderMap(latitude, longitude);
-    });
-
-    function renderChart() {
-      const ctx = document.getElementById("wbgtChart").getContext("2d");
-      const labels = wbgtData.map(d => d.time.toLocaleString());
-      const data = wbgtData.map(d => d.wbgt);
-
-      new Chart(ctx, {
-        type: "line",
-        data: {
-          labels,
-          datasets: [{
-            label: "WBGT (°F)",
-            data,
-            borderColor: "#007bff",
-            backgroundColor: "rgba(0,123,255,0.1)",
-            tension: 0.2
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { position: "top" },
-            title: { display: true, text: "Hourly WBGT Forecast" }
-          },
-          scales: {
-            x: { display: true, title: { display: true, text: "Date/Time" } },
-            y: { display: true, title: { display: true, text: "WBGT (°F)" } }
-          }
-        }
-      });
-    }
-
-    function renderMap(lat, lon) {
-      const mapDiv = document.getElementById("wbgt-map");
-      mapDiv.innerHTML = "";
-      const map = L.map("wbgt-map").setView([lat, lon], 10);
-      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>'
+      const map = L.map('map').setView([27.98, -82.77], 10);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
       }).addTo(map);
 
-      const currentWBGT = wbgtData.find(d => new Date(d.time) > new Date());
-      const risk = currentWBGT?.risk || "Unknown";
-      const color = currentWBGT?.color || "gray";
+      document.getElementById("wbgt-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const loc = document.getElementById("wbgt-location").value.trim();
+        if (!loc) return alert("Please enter a location.");
 
-      L.circle([lat, lon], {
-        radius: 15000,
-        color,
-        fillColor: color,
-        fillOpacity: 0.4
-      }).addTo(map).bindPopup(`WBGT Risk: <strong>${risk}</strong>`);
-    }
+        const geo = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(loc)}&count=1`);
+        const geoData = await geo.json();
+        const place = geoData.results?.[0];
+        if (!place) return alert("Location not found.");
 
-    document.getElementById("downloadCSV").addEventListener("click", () => {
-      const header = ["Date/Time", "Temp (°F)", "Dew Pt (°F)", "WBGT (°F)", "Risk"];
-      const rows = wbgtData.map(d => [
-        d.time.toLocaleString(),
-        d.temp,
-        d.dew,
-        d.wbgt,
-        d.risk
-      ]);
-      const csvContent = [header, ...rows].map(e => e.join(",")).join("\n");
-      const blob = new Blob([csvContent], { type: "text/csv" });
-      const url = URL.createObjectURL(blob);
+        const { latitude, longitude, name, admin1, timezone } = place;
+        map.setView([latitude, longitude], 10);
+        L.marker([latitude, longitude]).addTo(map).bindPopup(`${name}, ${admin1}`).openPopup();
 
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "wbgt_data.csv";
-      a.click();
-      URL.revokeObjectURL(url);
+        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&hourly=temperature_2m,dewpoint_2m&timezone=${timezone}`);
+        const data = await res.json();
+
+        const times = data.hourly.time.map(t => new Date(t));
+        const tempF = data.hourly.temperature_2m.map(c => (c * 9/5 + 32).toFixed(1));
+        const dewF = data.hourly.dewpoint_2m.map(c => (c * 9/5 + 32).toFixed(1));
+        const wbgtVals = tempF.map((t, i) => (parseFloat(t) + parseFloat(dewF[i]) * 0.4).toFixed(1));
+
+        const labels = times.map(t => `${t.toLocaleDateString()} ${t.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`);
+        const bgColors = wbgtVals.map(w => w >= 88 ? 'rgba(255,0,0,0.6)' : w >= 82 ? 'rgba(255,165,0,0.6)' : 'rgba(0,128,0,0.5)');
+
+        if (chart) chart.destroy();
+        const ctx = document.getElementById("wbgt-chart").getContext("2d");
+        chart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels,
+            datasets: [{
+              label: "WBGT (°F)",
+              data: wbgtVals,
+              backgroundColor: bgColors
+            }]
+          },
+          options: {
+            responsive: true,
+            scales: {
+              x: { ticks: { maxRotation: 90, minRotation: 45 }, title: { display: true, text: "Date/Time" } },
+              y: { beginAtZero: true, title: { display: true, text: "WBGT (°F)" } }
+            },
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  afterLabel: (ctx) => {
+                    const v = parseFloat(ctx.raw);
+                    return v >= 88 ? "High Risk" : v >= 82 ? "Moderate Risk" : "Low Risk";
+                  }
+                }
+              }
+            }
+          }
+        });
+      });
     });
   </script>
 </body>
