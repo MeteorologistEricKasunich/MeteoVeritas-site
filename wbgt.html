@@ -151,3 +151,94 @@
           paint: {}
         });
       });
+document.getElementById("wbgt-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const query = document.getElementById("wbgt-location").value.trim();
+      if (!query) return alert("Please enter a city or ZIP code.");
+
+      const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=1`);
+      const geoData = await geoRes.json();
+      const place = geoData.results?.[0];
+      if (!place) return alert("Could not find location.");
+
+      const { latitude, longitude, name, admin1, timezone } = place;
+      map.flyTo({ center: [longitude, latitude], zoom: 10 });
+
+      const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&hourly=temperature_2m,dewpoint_2m,windspeed_10m,cloudcover&timezone=${timezone}`);
+      const weatherData = await weatherRes.json();
+
+      const times = weatherData.hourly.time;
+      const temps = weatherData.hourly.temperature_2m.map(c => c * 9/5 + 32);
+      const dews = weatherData.hourly.dewpoint_2m.map(c => c * 9/5 + 32);
+      const wind = weatherData.hourly.windspeed_10m;
+      const clouds = weatherData.hourly.cloudcover;
+
+      const wbgtData = [];
+      for (let i = 0; i < times.length; i++) {
+        const t = temps[i];
+        const dp = dews[i];
+        const ws = wind[i];
+        const cc = clouds[i];
+
+        const sunFactor = 1 - (cc / 100);
+        const wbgt = (0.7 * dp + 0.3 * t) - 0.2 * ws + sunFactor * 2;
+        wbgtData.push({ time: times[i], value: parseFloat(wbgt.toFixed(1)) });
+      }
+
+      const labels = wbgtData.map(d => {
+        const dt = new Date(d.time);
+        return dt.toLocaleString([], { weekday: 'short', hour: 'numeric', hour12: true });
+      });
+
+      const values = wbgtData.map(d => d.value);
+
+      const ctx = chartCanvas.getContext("2d");
+      if (wbgtChart) wbgtChart.destroy();
+      wbgtChart = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels,
+          datasets: [{
+            label: `WBGT for ${name}, ${admin1}`,
+            data: values,
+            fill: true,
+            borderColor: "#ff5733",
+            backgroundColor: "rgba(255,87,51,0.2)",
+            tension: 0.4
+          }]
+        },
+        options: {
+          scales: {
+            y: {
+              title: { display: true, text: "WBGT (°F)" },
+              ticks: {
+                callback: val => `${val} °F`
+              },
+              grid: { color: "#eee" }
+            },
+            x: {
+              title: { display: true, text: "Date & Time" },
+              grid: { color: "#f5f5f5" }
+            }
+          },
+          plugins: {
+            legend: { display: true },
+            tooltip: {
+              callbacks: {
+                label: ctx => {
+                  const val = ctx.raw;
+                  let risk = "Low";
+                  if (val >= 82 && val < 88) risk = "Moderate";
+                  else if (val >= 88 && val < 92) risk = "High";
+                  else if (val >= 92) risk = "Extreme";
+                  return `WBGT: ${val} °F (${risk} risk)`;
+                }
+              }
+            }
+          }
+        }
+      });
+    });
+  </script>
+</body>
+</html>
