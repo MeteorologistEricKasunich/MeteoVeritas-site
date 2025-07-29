@@ -143,8 +143,81 @@
     <p style="color:white;">© <span id="year"></span> MeteoVeritas. Data sources: Open-Meteo, MapLibre, NOAA, FEMA.</p>
   </footer>
 
+  <h2>Regional WBGT Risk Map</h2>
+<div id="map" style="height: 500px; margin-bottom: 20px;"></div>
+
+
+<script>
+  // MapLibre Map Setup
+  const map = new maplibregl.Map({
+    container: 'map',
+    style: 'https://tiles.stadiamaps.com/styles/alidade_smooth.json',
+    center: [-82.7865, 28.0199], // Default center (Dunedin, FL)
+    zoom: 7
+  });
+
+// Add navigation controls
+  map.addControl(new maplibregl.NavigationControl());
+
+  // Geolocate Control
+  map.addControl(new maplibregl.GeolocateControl({
+    positionOptions: { enableHighAccuracy: true },
+    trackUserLocation: true,
+    showUserHeading: true
+  }));
+
+  map.on('load', () => {
+    // NOAA/NWS Excessive Heat Warnings (via ArcGIS layer)
+    map.addSource('noaa-alerts', {
+      type: 'raster',
+      tiles: [
+        'https://opengeo.ncep.noaa.gov/geoserver/conus/conus_extreme_heat/ows?service=WMS&version=1.1.1&request=GetMap&layers=conus_extreme_heat&styles=&bbox=-130,20,-60,55&width=1024&height=512&srs=EPSG:4326&format=image/png'
+      ],
+      tileSize: 256
+    });
+    map.addLayer({
+      id: 'noaa-alerts-layer',
+      type: 'raster',
+      source: 'noaa-alerts',
+      layout: { visibility: 'visible' }
+    });
+
+    // Solar Radiation (via open-meteo)
+    map.addSource('solar', {
+      type: 'raster',
+      tiles: [
+        'https://tiles.open-meteo.com/v1/nowcast/solar-radiation/{z}/{x}/{y}.png'
+      ],
+      tileSize: 256
+    });
+    map.addLayer({
+      id: 'solar-layer',
+      type: 'raster',
+      source: 'solar',
+      paint: { 'raster-opacity': 0.6 }
+    });
+
+    // Wind Arrows (optional and experimental)
+    map.addSource('wind', {
+      type: 'raster',
+      tiles: [
+        'https://tiles.open-meteo.com/v1/nowcast/wind-vector/{z}/{x}/{y}.png'
+      ],
+      tileSize: 256
+    });
+    map.addLayer({
+      id: 'wind-layer',
+      type: 'raster',
+      source: 'wind',
+      paint: { 'raster-opacity': 0.5 }
+    });
+  });
+</script>
+
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://unpkg.com/maplibre-gl@3.2.1/dist/maplibre-gl.js"></script>
+  <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
+<link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet" />
 
   <script>
     document.getElementById("year").textContent = new Date().getFullYear();
