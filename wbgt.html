@@ -1,373 +1,133 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>WBGT Center | MeteoVeritas</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="/assets/css/styles.css">
-  <link href="https://unpkg.com/maplibre-gl@3.2.1/dist/maplibre-gl.css" rel="stylesheet" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/assets/css/styles.css" />
+  <link href="https://cdn.jsdelivr.net/npm/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #f4f6f9;
-      color: #333;
+      background: #f2f4f7;
+      margin: 0;
+      padding: 0;
     }
-
-    .mv-header {
+    .mv-header, .mv-footer {
       background: #003366;
       color: white;
-      padding: 10px 20px;
+      padding: 1rem;
+      text-align: center;
     }
-
-    .mv-header a {
+    .mv-nav a {
       color: white;
+      margin: 0 1rem;
       text-decoration: none;
-      font-weight: bold;
-      margin-right: 15px;
     }
-
     .mv-weather-wrapper {
-      padding: 20px;
-      max-width: 1100px;
+      max-width: 1000px;
       margin: auto;
-    }
-
-    .mv-btn-primary {
-      padding: 10px 15px;
-      background-color: #0077cc;
-      color: white;
-      border: none;
-      cursor: pointer;
-      font-weight: bold;
-      border-radius: 5px;
-    }
-
-    #wbgt-results, #wbgt-chart-container {
-      margin-top: 20px;
-    }
-
-    #map {
-      height: 400px;
-      margin-top: 30px;
+      padding: 2rem;
+      background: white;
       border-radius: 8px;
     }
-
-    .legend {
-      background-color: #eef;
-      padding: 10px;
-      border-radius: 5px;
-      margin-top: 20px;
+    h1 {
+      margin-top: 0;
     }
-
+    .legend {
+      background: #e0e0e0;
+      padding: 1rem;
+      border-radius: 6px;
+      margin-bottom: 1rem;
+    }
     .legend ul {
       list-style: none;
       padding-left: 0;
     }
-
     .legend li {
-      margin-bottom: 6px;
+      margin: 4px 0;
     }
-
-    .wbgt-risk-low {
-      color: green;
+    .risk-extreme { color: purple; }
+    .risk-high { color: red; }
+    .risk-moderate { color: orange; }
+    .risk-low { color: green; }
+    .mv-btn-primary {
+      padding: 0.5rem 1rem;
+      background: #0077cc;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
     }
-
-    .wbgt-risk-moderate {
-      color: orange;
+    #wbgt-chart {
+      max-width: 100%;
+      margin-top: 2rem;
     }
-
-    .wbgt-risk-high {
-      color: red;
-    }
-
-    .wbgt-risk-extreme {
-      color: purple;
-    }
-
-    canvas {
-      background: white;
+    #map {
+      height: 400px;
+      margin-top: 2rem;
       border-radius: 8px;
-      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    }
+    #csv-export {
+      margin-top: 1rem;
+      display: inline-block;
     }
   </style>
 </head>
 <body>
   <header class="mv-header">
-    <a href="/"><img src="/assets/img/placeholder-logo.svg" alt="MeteoVeritas" height="40"></a>
-    <nav>
-      <a href="/weather.html">Weather</a>
-      <a href="/historical.html">Historical</a>
+    <h2>MeteoVeritas</h2>
+    <nav class="mv-nav">
+      <a href="/weather.html">Weather Center</a>
+      <a href="/historical.html">Historical Weather</a>
       <a href="/wbgt.html" class="active">WBGT Center</a>
       <a href="/consulting.html">Consulting</a>
-      <a href="/contact.html">Contact</a>
+      <a href="/contact.html">Request Services</a>
     </nav>
   </header>
 
   <main class="mv-weather-wrapper">
     <h1>Wet Bulb Globe Temperature (WBGT)</h1>
-    <p><strong>What is WBGT?</strong> WBGT (Wet Bulb Globe Temperature) is a comprehensive index that considers temperature, humidity, solar radiation, and wind to assess heat stress. It’s more reliable than heat index, especially for outdoor activity or labor.</p>
-
-    <p>We apply the <strong>Liljegren method</strong>, one of the most accurate open-source WBGT formulas, which includes:</p>
+    <p><strong>What is WBGT?</strong><br>
+    WBGT stands for Wet Bulb Globe Temperature — a comprehensive measure of heat stress that combines temperature, humidity, wind speed, and solar radiation. It’s more accurate than the heat index for outdoor activity risk. <br><br>
+    <em>We’ll apply the Liljegren method, widely regarded as the most accurate open-source WBGT approximation. It includes:</em>
     <ul>
-      <li>Black globe temperature estimation</li>
-      <li>Wind speed and solar radiation adjustments</li>
-      <li>Sun angle and time-of-day corrections</li>
+      <li>Black globe temperature estimate</li>
+      <li>Adjustments for wind speed and solar radiation</li>
+      <li>Time-of-day + sun angle effects</li>
     </ul>
+    </p>
 
     <div class="legend">
-      <strong>Risk Levels:</strong>
+      <strong>WBGT Risk Levels:</strong>
       <ul>
-        <li><span class="wbgt-risk-low">Low (WBGT &lt; 82°F):</span> Minimal risk</li>
-        <li><span class="wbgt-risk-moderate">Moderate (82°F–87.9°F):</span> Use caution, hydrate</li>
-        <li><span class="wbgt-risk-high">High (88°F–90.9°F):</span> Heat illness likely — rest breaks essential</li>
-        <li><span class="wbgt-risk-extreme">Extreme (91°F+):</span> Dangerous — limit exertion to 10 minutes/hour</li>
+        <li><span class="risk-low">Low:</span> WBGT below 82°F</li>
+        <li><span class="risk-moderate">Moderate:</span> 82–87.9°F</li>
+        <li><span class="risk-high">High:</span> 88–90.9°F</li>
+        <li><span class="risk-extreme">Extreme:</span> 91°F+</li>
       </ul>
     </div>
 
     <form id="wbgt-form">
-      <input type="text" id="location-input" placeholder="Enter city, state or ZIP" required>
+      <input type="text" id="wbgt-location" placeholder="Enter city, state or ZIP" required />
       <button type="submit" class="mv-btn-primary">Get WBGT</button>
-      <button type="button" id="locate-btn" class="mv-btn-primary">Use My Location</button>
     </form>
 
-    <div id="wbgt-results"></div>
-    <div id="wbgt-chart-container">
-      <canvas id="wbgtChart" height="120"></canvas>
-      <button id="exportCSV" class="mv-btn-primary" style="margin-top:10px;">Export to CSV</button>
-    </div>
-
+    <button id="locate-me" class="mv-btn-primary" style="margin-top:10px;">Use My Location</button>
+    <canvas id="wbgt-chart"></canvas>
+    <button id="csv-export" class="mv-btn-primary">Export to CSV</button>
     <div id="map"></div>
   </main>
 
-  <footer class="mv-header" style="margin-top: 40px; background: #003366;">
-    <p style="color:white;">© <span id="year"></span> MeteoVeritas. Data sources: Open-Meteo, MapLibre, NOAA, FEMA.</p>
+  <footer class="mv-footer">
+    <p>© <span id="mv-year"></span> MeteoVeritas</p>
   </footer>
 
-  <h2>Regional WBGT Risk Map</h2>
-<div id="map" style="height: 500px; margin-bottom: 20px;"></div>
-
-
-<script>
-  // MapLibre Map Setup
-  const map = new maplibregl.Map({
-    container: 'map',
-    style: 'https://tiles.stadiamaps.com/styles/alidade_smooth.json',
-    center: [-82.7865, 28.0199], // Default center (Dunedin, FL)
-    zoom: 7
-  });
-
-// Add navigation controls
-  map.addControl(new maplibregl.NavigationControl());
-
-  // Geolocate Control
-  map.addControl(new maplibregl.GeolocateControl({
-    positionOptions: { enableHighAccuracy: true },
-    trackUserLocation: true,
-    showUserHeading: true
-  }));
-
-  map.on('load', () => {
-    // NOAA/NWS Excessive Heat Warnings (via ArcGIS layer)
-    map.addSource('noaa-alerts', {
-      type: 'raster',
-      tiles: [
-        'https://opengeo.ncep.noaa.gov/geoserver/conus/conus_extreme_heat/ows?service=WMS&version=1.1.1&request=GetMap&layers=conus_extreme_heat&styles=&bbox=-130,20,-60,55&width=1024&height=512&srs=EPSG:4326&format=image/png'
-      ],
-      tileSize: 256
-    });
-    map.addLayer({
-      id: 'noaa-alerts-layer',
-      type: 'raster',
-      source: 'noaa-alerts',
-      layout: { visibility: 'visible' }
-    });
-
-    // Solar Radiation (via open-meteo)
-    map.addSource('solar', {
-      type: 'raster',
-      tiles: [
-        'https://tiles.open-meteo.com/v1/nowcast/solar-radiation/{z}/{x}/{y}.png'
-      ],
-      tileSize: 256
-    });
-    map.addLayer({
-      id: 'solar-layer',
-      type: 'raster',
-      source: 'solar',
-      paint: { 'raster-opacity': 0.6 }
-    });
-
-    // Wind Arrows (optional and experimental)
-    map.addSource('wind', {
-      type: 'raster',
-      tiles: [
-        'https://tiles.open-meteo.com/v1/nowcast/wind-vector/{z}/{x}/{y}.png'
-      ],
-      tileSize: 256
-    });
-    map.addLayer({
-      id: 'wind-layer',
-      type: 'raster',
-      source: 'wind',
-      paint: { 'raster-opacity': 0.5 }
-    });
-  });
-</script>
-
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://unpkg.com/maplibre-gl@3.2.1/dist/maplibre-gl.js"></script>
-  <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
-<link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet" />
-
   <script>
-    document.getElementById("year").textContent = new Date().getFullYear();
-
-    const form = document.getElementById("wbgt-form");
-    const chartCanvas = document.getElementById("wbgtChart").getContext("2d");
-    let wbgtChart;
-
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const query = document.getElementById("location-input").value;
-      if (!query) return;
-
-      getWBGTData(query);
-    });
-
-    document.getElementById("locate-btn").addEventListener("click", () => {
-      if ("geolocation" in navigator) {
-        navigator.geolocation.getCurrentPosition(pos => {
-          const { latitude, longitude } = pos.coords;
-          getWBGTData(null, latitude, longitude);
-        });
-      } else {
-        alert("Geolocation not supported.");
-      }
-    });
-
-    async function getWBGTData(location, lat = null, lon = null) {
-      let coords;
-      if (!lat || !lon) {
-        const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(location)}&count=1`);
-        const data = await res.json();
-        if (!data.results || data.results.length === 0) {
-          alert("Could not find location.");
-          return;
-        }
-        coords = data.results[0];
-        lat = coords.latitude;
-        lon = coords.longitude;
-      }
-
-      const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,dewpoint_2m,cloudcover,windspeed_10m,shortwave_radiation&timezone=auto`);
-      const data = await res.json();
-
-      const times = data.hourly.time;
-      const temp = data.hourly.temperature_2m;
-      const dew = data.hourly.dewpoint_2m;
-
-      const wbgt = temp.map((t, i) => {
-        const tF = t * 9/5 + 32;
-        const dF = dew[i] * 9/5 + 32;
-        return +(tF + dF * 0.4).toFixed(1);
-      });
-
-      const labels = times.map(t => new Date(t).toLocaleString([], { hour: 'numeric', minute: '2-digit', hour12: true, month: 'short', day: 'numeric' }));
-      const colors = wbgt.map(w => {
-        if (w >= 91) return 'purple';
-        if (w >= 88) return 'red';
-        if (w >= 82) return 'orange';
-        return 'green';
-      });
-
-      if (wbgtChart) wbgtChart.destroy();
-      wbgtChart = new Chart(chartCanvas, {
-        type: 'line',
-        data: {
-          labels,
-          datasets: [{
-            label: "WBGT (°F)",
-            data: wbgt,
-            borderColor: '#0077cc',
-            backgroundColor: 'rgba(0,119,204,0.1)',
-            pointBackgroundColor: colors,
-            pointRadius: 5,
-            tension: 0.4
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { position: 'top' },
-            tooltip: {
-              callbacks: {
-                label: (ctx) => `WBGT: ${ctx.raw} °F`
-              }
-            }
-          },
-          scales: {
-            y: {
-              title: { display: true, text: 'WBGT (°F)' }
-            }
-          }
-        }
-      });
-
-      // CSV Export
-      document.getElementById("exportCSV").onclick = () => {
-        const rows = [["Time", "WBGT"]];
-        for (let i = 0; i < labels.length; i++) {
-          rows.push([labels[i], wbgt[i]]);
-        }
-        const blob = new Blob([rows.map(r => r.join(",")).join("\n")], { type: "text/csv" });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = `wbgt_${Date.now()}.csv`;
-        link.click();
-      };
-
-      document.getElementById("wbgt-results").innerHTML = `<p><strong>Location:</strong> ${location || `${lat.toFixed(2)}, ${lon.toFixed(2)}`}</p><p><strong>Forecast Date Range:</strong> ${new Date(times[0]).toLocaleDateString()} to ${new Date(times.at(-1)).toLocaleDateString()}</p>`;
-    }
-
-    // MapLibre setup
-    const map = new maplibregl.Map({
-      container: "map",
-      style: "https://tiles.stadiamaps.com/styles/alidade_smooth.json",
-      center: [-82.75, 27.9],
-      zoom: 8
-    });
-
-    map.addControl(new maplibregl.NavigationControl());
-
-    map.on("load", () => {
-      map.addSource("heat-warnings", {
-        type: "geojson",
-        data: "https://www.weather.gov/source/ahps/heat/heat_warnings.geojson"
-      });
-
-      map.addLayer({
-        id: "heat-warnings-fill",
-        type: "fill",
-        source: "heat-warnings",
-        paint: {
-          "fill-color": "#ff0000",
-          "fill-opacity": 0.3
-        }
-      });
-
-      map.addSource("solar-rad", {
-        type: "raster",
-        tiles: ["https://tiles.meteomatics.com/2023-06-01-12:00:00Z/solar_rad/1/{z}/{x}/{y}.png?apikey=demo"],
-        tileSize: 256
-      });
-
-      map.addLayer({
-        id: "solar-rad-layer",
-        type: "raster",
-        source: "solar-rad",
-        paint: {}
-      });
-    });
+    document.getElementById("mv-year").textContent = new Date().getFullYear();
   </script>
+  <script src="/assets/js/wbgt-tool.js"></script>
 </body>
 </html>
