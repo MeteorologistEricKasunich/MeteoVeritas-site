@@ -137,3 +137,164 @@
     </div>
 
     <div id="map"></div>
+  </main>
+
+  <footer class="mv-header" style="margin-top: 40px; background: #003366;">
+    <p style="color:white;">© <span id="year"></span> MeteoVeritas. Data sources: Open-Meteo, MapLibre, NOAA, FEMA.</p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://unpkg.com/maplibre-gl@3.2.1/dist/maplibre-gl.js"></script>
+
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+
+    const form = document.getElementById("wbgt-form");
+    const chartCanvas = document.getElementById("wbgtChart").getContext("2d");
+    let wbgtChart;
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const query = document.getElementById("location-input").value;
+      if (!query) return;
+
+      getWBGTData(query);
+    });
+
+    document.getElementById("locate-btn").addEventListener("click", () => {
+      if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(pos => {
+          const { latitude, longitude } = pos.coords;
+          getWBGTData(null, latitude, longitude);
+        });
+      } else {
+        alert("Geolocation not supported.");
+      }
+    });
+
+    async function getWBGTData(location, lat = null, lon = null) {
+      let coords;
+      if (!lat || !lon) {
+        const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(location)}&count=1`);
+        const data = await res.json();
+        if (!data.results || data.results.length === 0) {
+          alert("Could not find location.");
+          return;
+        }
+        coords = data.results[0];
+        lat = coords.latitude;
+        lon = coords.longitude;
+      }
+
+      const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,dewpoint_2m,cloudcover,windspeed_10m,shortwave_radiation&timezone=auto`);
+      const data = await res.json();
+
+      const times = data.hourly.time;
+      const temp = data.hourly.temperature_2m;
+      const dew = data.hourly.dewpoint_2m;
+
+      const wbgt = temp.map((t, i) => {
+        const tF = t * 9/5 + 32;
+        const dF = dew[i] * 9/5 + 32;
+        return +(tF + dF * 0.4).toFixed(1);
+      });
+
+      const labels = times.map(t => new Date(t).toLocaleString([], { hour: 'numeric', minute: '2-digit', hour12: true, month: 'short', day: 'numeric' }));
+      const colors = wbgt.map(w => {
+        if (w >= 91) return 'purple';
+        if (w >= 88) return 'red';
+        if (w >= 82) return 'orange';
+        return 'green';
+      });
+
+      if (wbgtChart) wbgtChart.destroy();
+      wbgtChart = new Chart(chartCanvas, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            label: "WBGT (°F)",
+            data: wbgt,
+            borderColor: '#0077cc',
+            backgroundColor: 'rgba(0,119,204,0.1)',
+            pointBackgroundColor: colors,
+            pointRadius: 5,
+            tension: 0.4
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { position: 'top' },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => `WBGT: ${ctx.raw} °F`
+              }
+            }
+          },
+          scales: {
+            y: {
+              title: { display: true, text: 'WBGT (°F)' }
+            }
+          }
+        }
+      });
+
+      // CSV Export
+      document.getElementById("exportCSV").onclick = () => {
+        const rows = [["Time", "WBGT"]];
+        for (let i = 0; i < labels.length; i++) {
+          rows.push([labels[i], wbgt[i]]);
+        }
+        const blob = new Blob([rows.map(r => r.join(",")).join("\n")], { type: "text/csv" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `wbgt_${Date.now()}.csv`;
+        link.click();
+      };
+
+      document.getElementById("wbgt-results").innerHTML = `<p><strong>Location:</strong> ${location || `${lat.toFixed(2)}, ${lon.toFixed(2)}`}</p><p><strong>Forecast Date Range:</strong> ${new Date(times[0]).toLocaleDateString()} to ${new Date(times.at(-1)).toLocaleDateString()}</p>`;
+    }
+
+    // MapLibre setup
+    const map = new maplibregl.Map({
+      container: "map",
+      style: "https://tiles.stadiamaps.com/styles/alidade_smooth.json",
+      center: [-82.75, 27.9],
+      zoom: 8
+    });
+
+    map.addControl(new maplibregl.NavigationControl());
+
+    map.on("load", () => {
+      map.addSource("heat-warnings", {
+        type: "geojson",
+        data: "https://www.weather.gov/source/ahps/heat/heat_warnings.geojson"
+      });
+
+      map.addLayer({
+        id: "heat-warnings-fill",
+        type: "fill",
+        source: "heat-warnings",
+        paint: {
+          "fill-color": "#ff0000",
+          "fill-opacity": 0.3
+        }
+      });
+
+      map.addSource("solar-rad", {
+        type: "raster",
+        tiles: ["https://tiles.meteomatics.com/2023-06-01-12:00:00Z/solar_rad/1/{z}/{x}/{y}.png?apikey=demo"],
+        tileSize: 256
+      });
+
+      map.addLayer({
+        id: "solar-rad-layer",
+        type: "raster",
+        source: "solar-rad",
+        paint: {}
+      });
+    });
+  </script>
+</body>
+</html>
