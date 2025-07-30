@@ -1,94 +1,206 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<title>MeteoVeritas | Actionable Weather Intelligence & Climate Risk</title>
-<meta name="description" content="MeteoVeritas provides data-driven weather consulting, WBGT heat stress tools, forensic meteorology, and live weather data.">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="/assets/css/styles.css">
+  <meta charset="UTF-8" />
+  <title>MeteoVeritas | Precision Weather Intelligence</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/assets/css/styles.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&family=Roboto:wght@300;500&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(to bottom, #002f4b, #dc4225);
+      color: white;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 2rem;
+      background-color: rgba(0, 0, 0, 0.7);
+    }
+
+    header img {
+      height: 45px;
+    }
+
+    nav a {
+      color: white;
+      text-decoration: none;
+      margin: 0 1rem;
+      font-weight: bold;
+    }
+
+    nav a:hover {
+      text-decoration: underline;
+    }
+
+    .hero {
+      text-align: center;
+      padding: 4rem 2rem;
+    }
+
+    .hero h1 {
+      font-size: 3rem;
+      font-family: 'Orbitron', sans-serif;
+      margin-bottom: 1rem;
+    }
+
+    .hero p {
+      font-size: 1.2rem;
+      max-width: 800px;
+      margin: auto;
+    }
+
+    .section {
+      padding: 3rem 2rem;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .section h2 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    .weather-box {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 1rem;
+      border-radius: 10px;
+      margin-bottom: 2rem;
+    }
+
+    .windy-container iframe {
+      width: 100%;
+      height: 500px;
+      border: none;
+      border-radius: 8px;
+    }
+
+    footer {
+      background-color: rgba(0, 0, 0, 0.8);
+      padding: 2rem;
+      text-align: center;
+      font-size: 0.9rem;
+    }
+
+    .about {
+      background-color: rgba(255, 255, 255, 0.1);
+      padding: 2rem;
+      border-radius: 10px;
+    }
+  </style>
 </head>
 <body>
-<header class="mv-header">
-  <a class="mv-logo" href="/"><img src="/assets/img/placeholder-logo.svg" alt="MeteoVeritas logo" width="160" height="48"></a>
-  <nav class="mv-nav">
-    <a href="/weather.html">Weather Center</a>
-    <a href="/wbgt.html">WBGT Center</a>
-    <a href="/historical.html">Historical Weather</a>
-    <a href="/consulting.html">Consulting</a>
-    <a href="/contact.html" class="mv-cta-btn">Request Services</a>
-  </nav>
-</header>
+  <header>
+    <a href="/"><img src="/assets/img/mv-logo.svg" alt="MeteoVeritas Logo" /></a>
+    <nav>
+      <a href="/weather.html">Weather Center</a>
+      <a href="/wbgt.html">WBGT Center</a>
+      <a href="/historical.html">Research</a>
+    </nav>
+  </header>
 
-<section class="mv-hero">
-  <h1>Actionable Weather Intelligence &amp; Climate Risk</h1>
-  <p>Driven by data. Grounded in truth.</p>
-  <div class="mv-hero-ctas">
-    <a class="mv-btn-primary" href="/contact.html">Request a Consultation</a>
-    <a class="mv-btn-secondary" href="/weather.html">View Live Weather</a>
-    <a class="mv-btn-secondary" href="/wbgt.html">Get WBGT For My Location</a>
+  <div class="hero">
+    <h1>Welcome to MeteoVeritas</h1>
+    <p>Expert forecasts, advanced climate tools, and precision weather intelligence for professionals, researchers, and outdoor risk decision-makers.</p>
   </div>
 
-<div style="max-width: 900px; margin: 40px auto; text-align: center;">
-  <h2>Live Radar & Weather Layers</h2>
-  <p>Click below for full interactive experience powered by Windy.com:</p>
-  
-  <a href="https://www.windy.com/-Weather-radar-radar?radar,27.991,-82.464,7" target="_blank" style="display:inline-block; padding:12px 20px; background-color:#0077cc; color:white; text-decoration:none; border-radius:6px; font-weight:bold;">
-    Open Full Windy Map
-  </a>
+  <section class="section weather-box">
+    <h2>Live Local Weather</h2>
+    <div id="current-weather">Loading weather data...</div>
+    <canvas id="forecastChart" height="120"></canvas>
+  </section>
 
-  <iframe 
-    width="100%" 
-    height="500" 
-    src="https://embed.windy.com/embed2.html?lat=27.991&lon=-82.464&zoom=7&overlay=radar" 
-    frameborder="0" 
-    style="margin-top:20px; border-radius:10px; box-shadow:0 0 12px rgba(0,0,0,0.15);"
-    title="Windy Preview"
-  ></iframe>
-</div>
+  <section class="section windy-container">
+    <h2>Interactive Radar</h2>
+    <iframe src="https://embed.windy.com/embed2.html?lat=27.9&lon=-82.7&detailLat=27.9&detailLon=-82.7&width=100%25&height=500&zoom=7&level=surface&overlay=radar&menu=true&message=true&marker=true&calendar=now&pressure=true&type=map&location=coordinates&detail=true&metricWind=default&metricTemp=default&radarRange=-1" loading="lazy"></iframe>
+  </section>
 
+  <section class="section about">
+    <h2>About MeteoVeritas</h2>
+    <p>MeteoVeritas is a modern meteorological platform delivering real-time weather data, advanced WBGT analysis, forensic reports, and high-resolution tools for public safety, research, and industry professionals.</p>
+    <p>Founded by meteorologists. Built for everyone.</p>
+  </section>
 
-</section>
+  <footer>
+    &copy; <span id="year"></span> MeteoVeritas. Powered by Open-Meteo, Windy, NOAA, and MapLibre.
+  </footer>
 
-<section class="mv-badges">
-  <ul>
-    <li>Broadcast Meteorologist</li>
-    <li>US Navy Weather Veteran</li>
-    <li>College Instructor</li>
-    <li>CCM Candidate</li>
-  </ul>
-</section>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
 
-<section class="mv-panels">
-  <article>
-    <h2>Weather Center</h2>
-    <p>Search any U.S. location for current conditions, forecast, radar &amp; satellite.</p>
-    <a href="/weather.html" class="mv-card-btn">Open</a>
-  </article>
-  <article>
-    <h2>WBGT Center</h2>
-    <p>Heat stress risk for athletes, outdoor work &amp; events. Enter a location (coming soon!).</p>
-    <a href="/wbgt.html" class="mv-card-btn">Preview</a>
-  </article>
-  <article>
-    <h2>Consulting &amp; Forensic Services</h2>
-    <p>Expert weather analysis for legal, insurance, real estate &amp; events.</p>
-    <a href="/consulting.html" class="mv-card-btn">Learn More</a>
-  </article>
-</section>
+    async function loadWeather() {
+      if (!navigator.geolocation) {
+        document.getElementById("current-weather").textContent = "Geolocation not supported.";
+        return;
+      }
 
-<footer class="mv-footer">
-  <p>© <span id="mv-year"></span> MeteoVeritas. All rights reserved.</p>
-</footer>
+      navigator.geolocation.getCurrentPosition(async (pos) => {
+        const lat = pos.coords.latitude;
+        const lon = pos.coords.longitude;
+        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&daily=temperature_2m_max,temperature_2m_min&timezone=auto`);
+        const data = await res.json();
 
-<!-- Hidden Netlify 'mv-lead' form so quick leads work from any CTA -->
-<form name="mv-lead" method="POST" data-netlify="true" netlify-honeypot="bot-field" hidden>
-  <input type="hidden" name="form-name" value="mv-lead">
-  <p class="hidden"><label>Don’t fill this out: <input name="bot-field"></label></p>
-  <input type="text" name="name" />
-  <input type="email" name="email" />
-  <textarea name="message"></textarea>
-</form>
+        const current = data.current_weather;
+        const daily = data.daily;
+        const locationInfo = `Lat: ${lat.toFixed(2)}, Lon: ${lon.toFixed(2)}`;
 
-<script src="/assets/js/main.js"></script>
+        document.getElementById("current-weather").innerHTML = `
+          <p><strong>Current:</strong> ${current.temperature}°F, ${current.weathercode} | Wind: ${current.windspeed} mph</p>
+          <p><strong>Location:</strong> ${locationInfo}</p>
+        `;
+
+        const labels = daily.time.map(t => new Date(t).toLocaleDateString());
+        const max = daily.temperature_2m_max;
+        const min = daily.temperature_2m_min;
+
+        new Chart(document.getElementById("forecastChart"), {
+          type: 'line',
+          data: {
+            labels,
+            datasets: [
+              {
+                label: "High",
+                data: max,
+                borderColor: "#ff5733",
+                fill: false
+              },
+              {
+                label: "Low",
+                data: min,
+                borderColor: "#337aff",
+                fill: false
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: {
+                position: "bottom"
+              }
+            },
+            scales: {
+              y: {
+                title: {
+                  display: true,
+                  text: "°F"
+                }
+              }
+            }
+          }
+        });
+      }, () => {
+        document.getElementById("current-weather").textContent = "Location access denied.";
+      });
+    }
+
+    loadWeather();
+  </script>
 </body>
 </html>
+Add a “Get a Forecast” search box on the homepage
