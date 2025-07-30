@@ -3,47 +3,30 @@
 <head>
   <meta charset="UTF-8" />
   <title>Historical Weather | MeteoVeritas</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="/assets/css/styles.css" />
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f4f6f9;
+      background-color: #f2f6fa;
       color: #333;
       padding: 20px;
     }
-    h1 {
+    h1, h2 {
       color: #003366;
     }
-    #storm-form {
-      margin-top: 20px;
-    }
-    label {
-      display: block;
-      margin: 8px 0 4px;
-      font-weight: bold;
-    }
-    input, select, button {
-      padding: 8px;
-      margin-bottom: 10px;
-      width: 100%;
-      max-width: 400px;
-    }
-    #map {
-      height: 400px;
-      width: 100%;
-      margin-top: 20px;
-      border-radius: 10px;
+    label, select, input, button {
+      margin: 5px 0;
     }
     table {
-      width: 100%;
       border-collapse: collapse;
-      margin-top: 20px;
+      width: 100%;
+      margin-top: 10px;
       background: white;
     }
     th, td {
-      padding: 10px;
-      border: 1px solid #ccc;
+      padding: 8px;
+      border: 1px solid #ddd;
     }
     th {
       background-color: #003366;
@@ -51,147 +34,175 @@
     }
     .pagination {
       margin-top: 10px;
-      display: flex;
-      justify-content: center;
-      gap: 8px;
+      text-align: center;
     }
     .pagination button {
+      margin: 0 5px;
       padding: 5px 10px;
-      border: none;
-      background-color: #0077cc;
+      background: #0077cc;
       color: white;
-      cursor: pointer;
+      border: none;
       border-radius: 4px;
+      cursor: pointer;
     }
-    .pagination button:disabled {
-      background-color: #ccc;
-      cursor: default;
+    iframe {
+      width: 100%;
+      height: 600px;
+      border: 2px solid #003366;
+      margin-top: 20px;
     }
   </style>
 </head>
 <body>
-  <h1>Historical Weather Reports</h1>
-  <form id="storm-form">
-    <label for="start-date">Start Date/Time (UTC)</label>
-    <input type="datetime-local" id="start-date" required />
+
+  <h1>Historical Weather Center</h1>
+  <p>Explore storm reports and historical observations using our powerful tools below.</p>
+
+  <h2>🔴 Storm Reports</h2>
+  <label for="wfoSelect">Select WFO (Weather Forecast Office):</label>
+  <select id="wfoSelect"></select>
+
+  <label for="startDate">Start Date:</label>
+  <input type="date" id="startDate" />
+
+  <label for="endDate">End Date:</label>
+  <input type="date" id="endDate" />
+
+  <button onclick="getStormReports()">Get Storm Reports</button>
+
+  <div id="reportTableContainer"></div>
+  <div class="pagination" id="paginationContainer"></div>
+
+  <hr />
+
+  <h2>📊 Time Series Viewer (NWS)</h2>
+  <p>View recorded hourly observations from any NOAA station. Example station: <strong>KISM</strong></p>
+  <form id="tsForm">
+    <label for="stationId">Enter Station ID:</label>
+    <input type="text" id="stationId" placeholder="e.g. KTPA" required />
     
-    <label for="end-date">End Date/Time (UTC)</label>
-    <input type="datetime-local" id="end-date" required />
-
-    <label for="wfo">WFO Station</label>
-    <select id="wfo">
-      <option value="">-- All --</option>
-      <option value="TBW">TBW (Tampa Bay)</option>
-      <option value="MFL">MFL (Miami)</option>
-      <option value="MLB">MLB (Melbourne)</option>
-      <option value="JAX">JAX (Jacksonville)</option>
-      <option value="TAE">TAE (Tallahassee)</option>
-      <option value="KEY">KEY (Key West)</option>
-      <!-- Add more if needed -->
-    </select>
-
-    <button type="submit">Get Storm Reports</button>
+    <label for="tsStart">Start Date:</label>
+    <input type="date" id="tsStart" required />
+    
+    <label for="tsEnd">End Date:</label>
+    <input type="date" id="tsEnd" required />
+    
+    <button type="submit">Load Graph</button>
   </form>
 
-  <div id="map"></div>
-  <div id="report-results"></div>
-  <div id="pagination" class="pagination"></div>
-
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <iframe id="tsViewer" src="" title="NWS Time Series Viewer" style="display:none;"></iframe>
 
   <script>
-    let reports = [];
-    let currentPage = 1;
-    const pageSize = 10;
-
-    const form = document.getElementById("storm-form");
-    const mapDiv = document.getElementById("map");
-    const resultsDiv = document.getElementById("report-results");
-    const paginationDiv = document.getElementById("pagination");
-
-    const map = L.map("map").setView([27.8, -82.7], 6);
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: "© OpenStreetMap contributors"
-    }).addTo(map);
-    let markerLayer = L.layerGroup().addTo(map);
-
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const start = document.getElementById("start-date").value.replace(/[-:]/g, "").replace("T", "");
-      const end = document.getElementById("end-date").value.replace(/[-:]/g, "").replace("T", "");
-      const wfo = document.getElementById("wfo").value;
-
-      const url = `https://mesonet.agron.iastate.edu/lsr/geojson.php?by=wfo&sts=${start}&ets=${end}&wfo=${wfo}`;
-      const res = await fetch(url);
-      const data = await res.json();
-      reports = data.features || [];
-      currentPage = 1;
-      renderResults();
+    // Load full WFO list into dropdown
+    const wfoList = [
+      "ABQ", "ALY", "AMA", "APX", "ARX", "BGM", "BIS", "BMX", "BOI", "BOU", "BOX",
+      "BRO", "BUF", "BYZ", "CAE", "CAR", "CHS", "CLE", "CRP", "CTP", "CYS", "DDC",
+      "DLH", "DMX", "DTX", "DVN", "EAX", "EPZ", "EWX", "FFC", "FGF", "FGZ", "FSD",
+      "GID", "GJT", "GLD", "GRB", "GRR", "GSP", "GJT", "GUM", "HFO", "HGX", "HNX",
+      "ICT", "ILM", "ILN", "ILX", "IND", "JAN", "JAX", "KEY", "LBF", "LCH", "LIX",
+      "LKN", "LMK", "LOT", "LUB", "LWX", "MAF", "MEG", "MFL", "MHX", "MKX", "MLB",
+      "MOB", "MPX", "MQT", "MRX", "MSO", "MTF", "OAX", "OHX", "OKC", "OTX", "PAH",
+      "PBZ", "PDT", "PHI", "PIH", "PUB", "RAH", "REV", "RIW", "RLX", "RNK", "SGF",
+      "SGX", "SHV", "SJU", "SLC", "STO", "TAE", "TBW", "TFX", "TOP", "TSA", "TWC",
+      "UNR", "VEF", "WFO", "WPC"
+    ];
+    const wfoSelect = document.getElementById("wfoSelect");
+    wfoList.forEach(wfo => {
+      const option = document.createElement("option");
+      option.value = wfo;
+      option.textContent = wfo;
+      wfoSelect.appendChild(option);
     });
 
-    function renderResults() {
-      const startIndex = (currentPage - 1) * pageSize;
-      const pageReports = reports.slice(startIndex, startIndex + pageSize);
+    // Fetch and display storm reports
+    async function getStormReports() {
+      const wfo = document.getElementById("wfoSelect").value;
+      const start = document.getElementById("startDate").value;
+      const end = document.getElementById("endDate").value;
+      if (!wfo || !start || !end) {
+        alert("Please fill in all fields.");
+        return;
+      }
 
-      resultsDiv.innerHTML = `
-        <table>
-          <thead>
-            <tr><th>Type</th><th>Location</th><th>Magnitude</th><th>Time (Local)</th><th>Comments</th></tr>
-          </thead>
-          <tbody>
-            ${pageReports.map(r => {
-              const props = r.properties;
-              const date = new Date(props.valid);
-              const localTime = date.toLocaleString([], { hour: 'numeric', minute: '2-digit', hour12: true, month: 'short', day: 'numeric' });
-              return `
-                <tr>
-                  <td>${props.type}</td>
-                  <td>${props.city}, ${props.state}</td>
-                  <td>${props.magnitude ?? ''}</td>
-                  <td>${localTime}</td>
-                  <td>${props.remark || ''}</td>
-                </tr>
-              `;
-            }).join('')}
-          </tbody>
-        </table>
-      `;
+      const url = `https://mesonet.agron.iastate.edu/geojson/lsr.php?by=wfo&wfo=${wfo}&start=${start}T00:00Z&end=${end}T23:59Z`;
+      const res = await fetch(url);
+      const data = await res.json();
 
-      // Reset and re-add markers
-      markerLayer.clearLayers();
-      pageReports.forEach(r => {
-        const { geometry, properties } = r;
-        if (geometry) {
-          const [lon, lat] = geometry.coordinates;
-          const msg = `${properties.type} - ${properties.city}, ${properties.state}`;
-          L.marker([lat, lon]).addTo(markerLayer).bindPopup(msg);
-        }
-      });
+      const features = data.features || [];
+      const cleaned = features.map(f => ({
+        time: new Date(f.properties.valid).toLocaleString('en-US', { hour12: true }),
+        type: f.properties.typetext,
+        location: f.properties.city + ", " + f.properties.state,
+        magnitude: f.properties.magnitude || "",
+        remarks: f.properties.remark || ""
+      }));
 
-      // Pagination controls
-      const totalPages = Math.ceil(reports.length / pageSize);
-      paginationDiv.innerHTML = `
-        <button onclick="prevPage()" ${currentPage === 1 ? "disabled" : ""}>Previous</button>
-        Page ${currentPage} of ${totalPages}
-        <button onclick="nextPage()" ${currentPage === totalPages ? "disabled" : ""}>Next</button>
-      `;
+      displayPaginatedTable(cleaned);
     }
 
-    window.prevPage = () => {
-      if (currentPage > 1) {
-        currentPage--;
-        renderResults();
-      }
-    };
+    // Display with pagination
+    function displayPaginatedTable(data) {
+      const rowsPerPage = 10;
+      let currentPage = 1;
 
-    window.nextPage = () => {
-      const totalPages = Math.ceil(reports.length / pageSize);
-      if (currentPage < totalPages) {
-        currentPage++;
-        renderResults();
+      function renderTable(page) {
+        const start = (page - 1) * rowsPerPage;
+        const end = start + rowsPerPage;
+        const sliced = data.slice(start, end);
+
+        const tableHTML = `
+          <table>
+            <thead>
+              <tr><th>Time (Local)</th><th>Type</th><th>Location</th><th>Magnitude</th><th>Remarks</th></tr>
+            </thead>
+            <tbody>
+              ${sliced.map(d => `
+                <tr>
+                  <td>${d.time}</td>
+                  <td>${d.type}</td>
+                  <td>${d.location}</td>
+                  <td>${d.magnitude}</td>
+                  <td>${d.remarks}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+        document.getElementById("reportTableContainer").innerHTML = tableHTML;
+
+        // Pagination buttons
+        const totalPages = Math.ceil(data.length / rowsPerPage);
+        let buttons = "";
+        for (let i = 1; i <= totalPages; i++) {
+          buttons += `<button onclick="gotoPage(${i})">${i}</button>`;
+        }
+        document.getElementById("paginationContainer").innerHTML = buttons;
       }
-    };
+
+      // Global for paging
+      window.gotoPage = function(page) {
+        currentPage = page;
+        renderTable(page);
+      }
+
+      renderTable(currentPage);
+    }
+
+    // Time Series Viewer handler
+    document.getElementById("tsForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const station = document.getElementById("stationId").value.trim();
+      const start = document.getElementById("tsStart").value;
+      const end = document.getElementById("tsEnd").value;
+      if (!station || !start || !end) {
+        alert("Please enter all fields.");
+        return;
+      }
+      const url = `https://www.weather.gov/wrh/timeseries?site=${station}&hours=72&units=english&chart=on&headers=on&obs=tabular&hourly=false&pview=standard&history=yes&start=${start}&end=${end}`;
+      const iframe = document.getElementById("tsViewer");
+      iframe.src = url;
+      iframe.style.display = "block";
+    });
   </script>
 </body>
 </html>
