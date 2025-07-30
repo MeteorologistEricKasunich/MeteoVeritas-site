@@ -2,94 +2,89 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>MeteoVeritas | Precision Weather Intelligence</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MeteoVeritas | Home</title>
   <link rel="stylesheet" href="/assets/css/styles.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&family=Roboto:wght@300;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=PT+Sans+Narrow&display=swap" rel="stylesheet">
   <style>
     body {
       margin: 0;
-      font-family: 'Roboto', sans-serif;
-      background: linear-gradient(to bottom, #002f4b, #dc4225);
+      font-family: 'PT Sans Narrow', sans-serif;
+      background: linear-gradient(to bottom, #013a63, #468faf, #fca311);
       color: white;
     }
-
     header {
+      background-color: #001f3f;
+      padding: 15px 30px;
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      padding: 1rem 2rem;
-      background-color: rgba(0, 0, 0, 0.7);
+      align-items: center;
     }
-
     header img {
-      height: 45px;
+      height: 50px;
     }
-
     nav a {
       color: white;
       text-decoration: none;
-      margin: 0 1rem;
-      font-weight: bold;
+      margin: 0 15px;
+      font-weight: 600;
     }
-
     nav a:hover {
       text-decoration: underline;
     }
-
-    .hero {
-      text-align: center;
-      padding: 4rem 2rem;
-    }
-
-    .hero h1 {
-      font-size: 3rem;
-      font-family: 'Orbitron', sans-serif;
-      margin-bottom: 1rem;
-    }
-
-    .hero p {
-      font-size: 1.2rem;
-      max-width: 800px;
-      margin: auto;
-    }
-
-    .section {
-      padding: 3rem 2rem;
+    main {
       max-width: 1200px;
       margin: auto;
+      padding: 40px 20px;
     }
-
-    .section h2 {
-      font-size: 2rem;
-      margin-bottom: 1rem;
+    h1 {
+      font-size: 3em;
+      margin-bottom: 0.5em;
+      color: #ffd700;
     }
-
-    .weather-box {
-      background: rgba(255, 255, 255, 0.1);
-      padding: 1rem;
+    .section {
+      margin-top: 60px;
+    }
+    .weather-current, .forecast {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      background: rgba(0, 0, 0, 0.4);
       border-radius: 10px;
-      margin-bottom: 2rem;
+      padding: 20px;
     }
-
-    .windy-container iframe {
+    .weather-current div {
+      flex: 1 1 200px;
+    }
+    .forecast-card {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 10px;
+      border-radius: 8px;
+      text-align: center;
+      flex: 1;
+    }
+    iframe {
       width: 100%;
       height: 500px;
       border: none;
-      border-radius: 8px;
-    }
-
-    footer {
-      background-color: rgba(0, 0, 0, 0.8);
-      padding: 2rem;
-      text-align: center;
-      font-size: 0.9rem;
-    }
-
-    .about {
-      background-color: rgba(255, 255, 255, 0.1);
-      padding: 2rem;
+      margin-top: 30px;
       border-radius: 10px;
+    }
+    footer {
+      background-color: #002b5c;
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+    .mv-btn {
+      background: #ffd700;
+      color: #001f3f;
+      border: none;
+      padding: 12px 18px;
+      font-weight: bold;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 20px;
     }
   </style>
 </head>
@@ -100,107 +95,82 @@
       <a href="/weather.html">Weather Center</a>
       <a href="/wbgt.html">WBGT Center</a>
       <a href="/historical.html">Research</a>
+      <a href="/consulting.html">Consulting</a>
+      <a href="/contact.html">Contact Us</a>
     </nav>
   </header>
 
-  <div class="hero">
+  <main>
     <h1>Welcome to MeteoVeritas</h1>
-    <p>Expert forecasts, advanced climate tools, and precision weather intelligence for professionals, researchers, and outdoor risk decision-makers.</p>
-  </div>
+    <p>High-tech, professional-grade weather intelligence—powered by science, driven by accuracy.</p>
 
-  <section class="section weather-box">
-    <h2>Live Local Weather</h2>
-    <div id="current-weather">Loading weather data...</div>
-    <canvas id="forecastChart" height="120"></canvas>
-  </section>
+    <div id="weather" class="weather-current"></div>
 
-  <section class="section windy-container">
-    <h2>Interactive Radar</h2>
-    <iframe src="https://embed.windy.com/embed2.html?lat=27.9&lon=-82.7&detailLat=27.9&detailLon=-82.7&width=100%25&height=500&zoom=7&level=surface&overlay=radar&menu=true&message=true&marker=true&calendar=now&pressure=true&type=map&location=coordinates&detail=true&metricWind=default&metricTemp=default&radarRange=-1" loading="lazy"></iframe>
-  </section>
+    <div class="section">
+      <h2>7-Day Forecast</h2>
+      <div id="forecast" class="forecast"></div>
+    </div>
 
-  <section class="section about">
-    <h2>About MeteoVeritas</h2>
-    <p>MeteoVeritas is a modern meteorological platform delivering real-time weather data, advanced WBGT analysis, forensic reports, and high-resolution tools for public safety, research, and industry professionals.</p>
-    <p>Founded by meteorologists. Built for everyone.</p>
-  </section>
+    <div class="section">
+      <h2>Live Radar</h2>
+      <iframe src="https://www.windy.com/-Weather-radar-radar?radar,27.76,-82.64,7,p:off" title="Live Radar via Windy"></iframe>
+    </div>
+
+    <div class="section">
+      <h2>Why Choose MeteoVeritas?</h2>
+      <p>We combine forensic meteorology, AI-powered climate analysis, and expert testimony to deliver trusted, accurate weather insight for legal, construction, public safety, and insurance clients.</p>
+      <a href="/consulting.html"><button class="mv-btn">Learn More</button></a>
+    </div>
+  </main>
 
   <footer>
-    &copy; <span id="year"></span> MeteoVeritas. Powered by Open-Meteo, Windy, NOAA, and MapLibre.
+    <p>© <span id="year"></span> MeteoVeritas. All Rights Reserved.</p>
   </footer>
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
     document.getElementById("year").textContent = new Date().getFullYear();
 
-    async function loadWeather() {
-      if (!navigator.geolocation) {
-        document.getElementById("current-weather").textContent = "Geolocation not supported.";
-        return;
-      }
+    async function getWeather(lat, lon) {
+      const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&daily=temperature_2m_max,temperature_2m_min&timezone=auto`);
+      const data = await res.json();
+      const current = data.current_weather;
+      const daily = data.daily;
 
-      navigator.geolocation.getCurrentPosition(async (pos) => {
-        const lat = pos.coords.latitude;
-        const lon = pos.coords.longitude;
-        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&daily=temperature_2m_max,temperature_2m_min&timezone=auto`);
-        const data = await res.json();
+      const weatherHTML = `
+        <div>
+          <h3>Current Weather</h3>
+          <p><strong>Temperature:</strong> ${(current.temperature * 9/5 + 32).toFixed(1)} °F</p>
+          <p><strong>Wind:</strong> ${current.windspeed} km/h</p>
+          <p><strong>Direction:</strong> ${current.winddirection}°</p>
+          <p><strong>Condition:</strong> ${current.weathercode}</p>
+        </div>
+      `;
+      document.getElementById("weather").innerHTML = weatherHTML;
 
-        const current = data.current_weather;
-        const daily = data.daily;
-        const locationInfo = `Lat: ${lat.toFixed(2)}, Lon: ${lon.toFixed(2)}`;
-
-        document.getElementById("current-weather").innerHTML = `
-          <p><strong>Current:</strong> ${current.temperature}°F, ${current.weathercode} | Wind: ${current.windspeed} mph</p>
-          <p><strong>Location:</strong> ${locationInfo}</p>
+      const forecastHTML = daily.time.map((date, i) => {
+        const maxF = (daily.temperature_2m_max[i] * 9/5 + 32).toFixed(1);
+        const minF = (daily.temperature_2m_min[i] * 9/5 + 32).toFixed(1);
+        const day = new Date(date).toLocaleDateString('en-US', { weekday: 'short' });
+        return `
+          <div class="forecast-card">
+            <h4>${day}</h4>
+            <p>High: ${maxF}°F</p>
+            <p>Low: ${minF}°F</p>
+          </div>
         `;
-
-        const labels = daily.time.map(t => new Date(t).toLocaleDateString());
-        const max = daily.temperature_2m_max;
-        const min = daily.temperature_2m_min;
-
-        new Chart(document.getElementById("forecastChart"), {
-          type: 'line',
-          data: {
-            labels,
-            datasets: [
-              {
-                label: "High",
-                data: max,
-                borderColor: "#ff5733",
-                fill: false
-              },
-              {
-                label: "Low",
-                data: min,
-                borderColor: "#337aff",
-                fill: false
-              }
-            ]
-          },
-          options: {
-            responsive: true,
-            plugins: {
-              legend: {
-                position: "bottom"
-              }
-            },
-            scales: {
-              y: {
-                title: {
-                  display: true,
-                  text: "°F"
-                }
-              }
-            }
-          }
-        });
-      }, () => {
-        document.getElementById("current-weather").textContent = "Location access denied.";
-      });
+      }).join('');
+      document.getElementById("forecast").innerHTML = forecastHTML;
     }
 
-    loadWeather();
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(pos => {
+        getWeather(pos.coords.latitude, pos.coords.longitude);
+      }, () => {
+        getWeather(27.76, -82.64); // fallback to Tampa
+      });
+    } else {
+      getWeather(27.76, -82.64);
+    }
   </script>
 </body>
 </html>
-Add a “Get a Forecast” search box on the homepage
