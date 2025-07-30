@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Storm Reports | MeteoVeritas</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/assets/css/styles.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f9;
+      margin: 0;
+    }
+
+    header {
+      background: #003366;
+      padding: 10px 20px;
+      color: white;
+    }
+
+    header a {
+      color: white;
+      font-weight: bold;
+      margin-right: 15px;
+      text-decoration: none;
+    }
+
+    main {
+      max-width: 1300px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      font-weight: bold;
+    }
+
+    #map {
+      height: 400px;
+      margin: 20px 0;
+      border-radius: 8px;
+    }
+
+    table.dataTable {
+      background: white;
+    }
+
+    #chat-box {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      width: 300px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.2);
+      padding: 10px;
+      z-index: 1000;
+    }
+
+    #chat-box textarea {
+      width: 100%;
+      height: 50px;
+      margin-bottom: 10px;
+    }
+
+    .mv-btn {
+      background-color: #0077cc;
+      color: white;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="/">MeteoVeritas</a>
+    <a href="/weather.html">Weather</a>
+    <a href="/historical.html">Historical</a>
+    <a href="/wbgt.html">WBGT</a>
+    <a href="/storm-reports.html" class="active">Storm Reports</a>
+  </header>
+
+  <main>
+    <h1>Storm Reports Dashboard</h1>
+    <p>Select a region and timeframe to view recent storm reports from the National Weather Service.</p>
+
+    <div class="form-group">
+      <label for="wfo">WFO (Weather Forecast Office):</label>
+      <select id="wfo">
+        <option value="TBW">Tampa Bay Area, FL</option>
+        <option value="MFL">Miami, FL</option>
+        <option value="JAX">Jacksonville, FL</option>
+        <option value="TAE">Tallahassee, FL</option>
+        <!-- Add more as needed -->
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="start">Start Date/Time:</label>
+      <input type="datetime-local" id="start" />
+    </div>
+
+    <div class="form-group">
+      <label for="end">End Date/Time:</label>
+      <input type="datetime-local" id="end" />
+    </div>
+
+    <button id="loadReports" class="mv-btn">Load Reports</button>
+
+    <div id="map"></div>
+    <table id="reportTable" class="display" style="width:100%">
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Type</th>
+          <th>Location</th>
+          <th>County</th>
+          <th>WFO</th>
+          <th>Details</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <button id="exportCSV" class="mv-btn" style="margin-top:10px;">Export Table to CSV</button>
+  </main>
+
+  <div id="chat-box">
+    <strong>AI Summary Chat</strong>
+    <textarea id="chat-input" placeholder="Ask about storm trends..."></textarea>
+    <button id="chat-send" class="mv-btn">Ask</button>
+    <div id="chat-response" style="margin-top:10px; font-size: 0.9em;"></div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+  <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+
+  <script>
+    let map = L.map('map').setView([27.95, -82.45], 6);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    const table = new DataTable("#reportTable");
+
+    document.getElementById("loadReports").addEventListener("click", async () => {
+      const wfo = document.getElementById("wfo").value;
+      const start = document.getElementById("start").value;
+      const end = document.getElementById("end").value;
+      if (!start || !end) {
+        alert("Select start and end dates.");
+        return;
+      }
+
+      const startFormatted = new Date(start).toISOString();
+      const endFormatted = new Date(end).toISOString();
+
+      const url = `https://mesonet.agron.iastate.edu/json/lsr.php?sts=${startFormatted}&ets=${endFormatted}&wfo=${wfo}`;
+
+      const res = await fetch(url);
+      const data = await res.json();
+
+      table.clear().draw();
+      map.eachLayer(layer => {
+        if (layer instanceof L.Marker) map.removeLayer(layer);
+      });
+
+      data.lsr.forEach(r => {
+        table.row.add([
+          r.valid,
+          r.typetext,
+          r.city,
+          r.county,
+          r.wfo,
+          r.remark || ""
+        ]).draw();
+
+        if (r.lat && r.lon) {
+          L.marker([r.lat, r.lon]).addTo(map)
+            .bindPopup(`<strong>${r.typetext}</strong><br>${r.remark || "No details"}`);
+        }
+      });
+    });
+
+    document.getElementById("exportCSV").addEventListener("click", () => {
+      let csv = "Time,Type,Location,County,WFO,Details\n";
+      table.rows().data().each(row => {
+        csv += row.map(r => `"${r}"`).join(",") + "\n";
+      });
+      const blob = new Blob([csv], { type: "text/csv" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "storm_reports.csv";
+      link.click();
+    });
+
+    // AI chatbot interface
+    document.getElementById("chat-send").addEventListener("click", async () => {
+      const input = document.getElementById("chat-input").value;
+      document.getElementById("chat-response").innerText = "Thinking...";
+
+      const reports = table.rows().data().toArray();
+      const prompt = `Analyze this storm report data and answer: ${input}\n\n` + JSON.stringify(reports);
+
+      const res = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": "90fdac465b84d6c6e6f8b3fae1fd5fd2",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          model: "gpt-4",
+          messages: [{ role: "user", content: prompt }],
+          max_tokens: 500
+        })
+      });
+
+      const data = await res.json();
+      const reply = data.choices?.[0]?.message?.content;
+      document.getElementById("chat-response").innerText = reply || "No response.";
+    });
+  </script>
+</body>
+</html>
