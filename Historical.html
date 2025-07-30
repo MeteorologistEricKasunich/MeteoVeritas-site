@@ -2,225 +2,196 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Historical Weather & Storm Reports | MeteoVeritas</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Historical Weather | MeteoVeritas</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="/assets/css/styles.css" />
-  <link href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" rel="stylesheet" />
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f5f8fa;
+      background: #f4f6f9;
       color: #333;
-    }
-
-    header.mv-header, footer.mv-header {
-      background: #003366;
-      color: white;
-      padding: 15px 20px;
-    }
-
-    .mv-header nav a {
-      color: white;
-      margin-right: 15px;
-      font-weight: bold;
-      text-decoration: none;
-    }
-
-    main {
-      max-width: 1200px;
-      margin: auto;
       padding: 20px;
     }
-
     h1 {
-      margin-bottom: 5px;
       color: #003366;
     }
-
     #storm-form {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 20px;
+      margin-top: 20px;
     }
-
-    #storm-form input, #storm-form select, #storm-form button {
+    label {
+      display: block;
+      margin: 8px 0 4px;
+      font-weight: bold;
+    }
+    input, select, button {
       padding: 8px;
-      font-size: 14px;
+      margin-bottom: 10px;
+      width: 100%;
+      max-width: 400px;
     }
-
     #map {
-      height: 500px;
-      border-radius: 8px;
-      margin-bottom: 20px;
+      height: 400px;
+      width: 100%;
+      margin-top: 20px;
+      border-radius: 10px;
     }
-
-    #report-table {
+    table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 20px;
+      background: white;
     }
-
-    #report-table th, #report-table td {
+    th, td {
+      padding: 10px;
       border: 1px solid #ccc;
-      padding: 8px;
-      font-size: 14px;
-      text-align: left;
     }
-
-    #report-table th {
+    th {
       background-color: #003366;
       color: white;
     }
-
-    .chatbot {
-      margin-top: 40px;
-      background: #fff;
-      border-radius: 8px;
-      padding: 20px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-
-    .chatbot textarea {
-      width: 100%;
-      height: 80px;
-      padding: 10px;
-      font-size: 14px;
-    }
-
-    .chatbot button {
+    .pagination {
       margin-top: 10px;
-      padding: 8px 16px;
-      background: #0077cc;
-      color: white;
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+    }
+    .pagination button {
+      padding: 5px 10px;
       border: none;
+      background-color: #0077cc;
+      color: white;
       cursor: pointer;
+      border-radius: 4px;
+    }
+    .pagination button:disabled {
+      background-color: #ccc;
+      cursor: default;
     }
   </style>
 </head>
 <body>
-  <header class="mv-header">
-    <a href="/"><img src="/assets/img/placeholder-logo.svg" alt="MeteoVeritas" height="40" /></a>
-    <nav>
-      <a href="/weather.html">Weather</a>
-      <a href="/historical.html" class="active">Historical</a>
-      <a href="/wbgt.html">WBGT Center</a>
-      <a href="/consulting.html">Consulting</a>
-      <a href="/contact.html">Contact</a>
-    </nav>
-  </header>
+  <h1>Historical Weather Reports</h1>
+  <form id="storm-form">
+    <label for="start-date">Start Date/Time (UTC)</label>
+    <input type="datetime-local" id="start-date" required />
+    
+    <label for="end-date">End Date/Time (UTC)</label>
+    <input type="datetime-local" id="end-date" required />
 
-  <main>
-    <h1>Historical Storm Reports</h1>
-    <p>Explore official storm reports across the U.S. with location filtering, date ranges, and report types.</p>
+    <label for="wfo">WFO Station</label>
+    <select id="wfo">
+      <option value="">-- All --</option>
+      <option value="TBW">TBW (Tampa Bay)</option>
+      <option value="MFL">MFL (Miami)</option>
+      <option value="MLB">MLB (Melbourne)</option>
+      <option value="JAX">JAX (Jacksonville)</option>
+      <option value="TAE">TAE (Tallahassee)</option>
+      <option value="KEY">KEY (Key West)</option>
+      <!-- Add more if needed -->
+    </select>
 
-    <form id="storm-form">
-      <label>Start Date: <input type="date" id="start-date" required /></label>
-      <label>End Date: <input type="date" id="end-date" required /></label>
-      <label>WFO (optional): <input type="text" id="wfo" placeholder="e.g. TBW" /></label>
-      <label>Report Types:</label>
-      <label><input type="checkbox" class="filter-type" value="T" checked /> Tornado</label>
-      <label><input type="checkbox" class="filter-type" value="H" checked /> Hail</label>
-      <label><input type="checkbox" class="filter-type" value="W" checked /> Wind</label>
-      <button type="submit">Search Reports</button>
-    </form>
+    <button type="submit">Get Storm Reports</button>
+  </form>
 
-    <div id="map"></div>
+  <div id="map"></div>
+  <div id="report-results"></div>
+  <div id="pagination" class="pagination"></div>
 
-    <table id="report-table">
-      <thead>
-        <tr>
-          <th>Time</th>
-          <th>Type</th>
-          <th>Location</th>
-          <th>Magnitude</th>
-          <th>City</th>
-          <th>County</th>
-          <th>Comments</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 
-    <div class="chatbot">
-      <h3>Ask about the storm reports (Beta AI)</h3>
-      <textarea id="ai-question" placeholder="e.g. What storms happened in Tampa last week?"></textarea>
-      <button id="ask-ai">Ask</button>
-      <div id="ai-response"></div>
-    </div>
-  </main>
-
-  <footer class="mv-header">
-    <p>© <span id="year"></span> MeteoVeritas. Data sources: Iowa Mesonet, NWS, NOAA.</p>
-  </footer>
-
-  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
   <script>
-    document.getElementById("year").textContent = new Date().getFullYear();
+    let reports = [];
+    let currentPage = 1;
+    const pageSize = 10;
 
-    const map = L.map('map').setView([39, -95], 5);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors'
+    const form = document.getElementById("storm-form");
+    const mapDiv = document.getElementById("map");
+    const resultsDiv = document.getElementById("report-results");
+    const paginationDiv = document.getElementById("pagination");
+
+    const map = L.map("map").setView([27.8, -82.7], 6);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "© OpenStreetMap contributors"
     }).addTo(map);
+    let markerLayer = L.layerGroup().addTo(map);
 
-    const markerGroup = L.layerGroup().addTo(map);
-
-    document.getElementById("storm-form").addEventListener("submit", async e => {
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      markerGroup.clearLayers();
-      const start = document.getElementById("start-date").value;
-      const end = document.getElementById("end-date").value;
-      const wfo = document.getElementById("wfo").value.trim();
-      const types = Array.from(document.querySelectorAll(".filter-type:checked")).map(cb => cb.value);
+      const start = document.getElementById("start-date").value.replace(/[-:]/g, "").replace("T", "");
+      const end = document.getElementById("end-date").value.replace(/[-:]/g, "").replace("T", "");
+      const wfo = document.getElementById("wfo").value;
 
-      const url = new URL("https://mesonet.agron.iastate.edu/geojson/lsr.php");
-      url.searchParams.set("sts", start + "T00:00Z");
-      url.searchParams.set("ets", end + "T23:59Z");
-      if (wfo) url.searchParams.set("wfo", wfo);
+      const url = `https://mesonet.agron.iastate.edu/lsr/geojson.php?by=wfo&sts=${start}&ets=${end}&wfo=${wfo}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      reports = data.features || [];
+      currentPage = 1;
+      renderResults();
+    });
 
-      try {
-        const res = await fetch(url);
-        const geo = await res.json();
-        const tableBody = document.querySelector("#report-table tbody");
-        tableBody.innerHTML = "";
+    function renderResults() {
+      const startIndex = (currentPage - 1) * pageSize;
+      const pageReports = reports.slice(startIndex, startIndex + pageSize);
 
-        geo.features
-          .filter(f => types.includes(f.properties.type))
-          .forEach(f => {
-            const p = f.properties;
-            const marker = L.marker([f.geometry.coordinates[1], f.geometry.coordinates[0]])
-              .bindPopup(`<strong>${p.type}</strong><br>${p.city}, ${p.county}<br>${p.magnitude} ${p.units}<br>${p.valid}<br>${p.remarks}`)
-              .addTo(markerGroup);
+      resultsDiv.innerHTML = `
+        <table>
+          <thead>
+            <tr><th>Type</th><th>Location</th><th>Magnitude</th><th>Time (Local)</th><th>Comments</th></tr>
+          </thead>
+          <tbody>
+            ${pageReports.map(r => {
+              const props = r.properties;
+              const date = new Date(props.valid);
+              const localTime = date.toLocaleString([], { hour: 'numeric', minute: '2-digit', hour12: true, month: 'short', day: 'numeric' });
+              return `
+                <tr>
+                  <td>${props.type}</td>
+                  <td>${props.city}, ${props.state}</td>
+                  <td>${props.magnitude ?? ''}</td>
+                  <td>${localTime}</td>
+                  <td>${props.remark || ''}</td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      `;
 
-            const row = tableBody.insertRow();
-            row.insertCell().textContent = p.valid;
-            row.insertCell().textContent = p.type;
-            row.insertCell().textContent = `${p.lat.toFixed(2)}, ${p.lon.toFixed(2)}`;
-            row.insertCell().textContent = `${p.magnitude} ${p.units}`;
-            row.insertCell().textContent = p.city;
-            row.insertCell().textContent = p.county;
-            row.insertCell().textContent = p.remarks;
-          });
-
-        if (geo.features.length === 0) {
-          alert("No storm reports found for the selected criteria.");
+      // Reset and re-add markers
+      markerLayer.clearLayers();
+      pageReports.forEach(r => {
+        const { geometry, properties } = r;
+        if (geometry) {
+          const [lon, lat] = geometry.coordinates;
+          const msg = `${properties.type} - ${properties.city}, ${properties.state}`;
+          L.marker([lat, lon]).addTo(markerLayer).bindPopup(msg);
         }
-      } catch (err) {
-        console.error(err);
-        alert("Failed to load storm reports.");
-      }
-    });
+      });
 
-    document.getElementById("ask-ai").addEventListener("click", () => {
-      const q = document.getElementById("ai-question").value.trim();
-      const r = document.getElementById("ai-response");
-      if (!q) return;
-      r.innerHTML = "Thinking...";
-      // Simulated response — in the future you could link this to GPT or your AI API
-      setTimeout(() => {
-        r.innerHTML = "I'm sorry, AI chat is still in development for this tool. Please try again later!";
-      }, 1000);
-    });
+      // Pagination controls
+      const totalPages = Math.ceil(reports.length / pageSize);
+      paginationDiv.innerHTML = `
+        <button onclick="prevPage()" ${currentPage === 1 ? "disabled" : ""}>Previous</button>
+        Page ${currentPage} of ${totalPages}
+        <button onclick="nextPage()" ${currentPage === totalPages ? "disabled" : ""}>Next</button>
+      `;
+    }
+
+    window.prevPage = () => {
+      if (currentPage > 1) {
+        currentPage--;
+        renderResults();
+      }
+    };
+
+    window.nextPage = () => {
+      const totalPages = Math.ceil(reports.length / pageSize);
+      if (currentPage < totalPages) {
+        currentPage++;
+        renderResults();
+      }
+    };
   </script>
 </body>
 </html>
