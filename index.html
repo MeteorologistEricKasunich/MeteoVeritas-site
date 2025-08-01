@@ -49,101 +49,6 @@
 
 </section>
 
-  <!-- Weather News Section -->
-<section class="section">
-  <h2 style="text-align:center; margin-bottom: 1rem;">🌤️ Latest Weather News</h2>
-  <div id="weather-news" class="news-grid">
-    <p>Loading the latest headlines...</p>
-  </div>
-</section>
-
-<style>
-  .news-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.2rem;
-    padding: 1rem;
-  }
-  .news-card {
-    background: #f9f9f9;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.05);
-    overflow: hidden;
-    transition: transform 0.2s ease-in-out;
-  }
-  .news-card:hover {
-    transform: scale(1.02);
-  }
-  .news-card img {
-    width: 100%;
-    height: 160px;
-    object-fit: cover;
-  }
-  .news-card h3 {
-    font-size: 1rem;
-    padding: 0.5rem;
-    margin: 0;
-  }
-  .news-card p {
-    padding: 0 0.5rem 0.8rem;
-    font-size: 0.9rem;
-    color: #444;
-  }
-</style>
-
-<script>
-(async () => {
-  const feedUrls = [
-    'https://www.weather.gov/rss/all.xml',
-    'https://rss.accuweather.com/rss/news_headlines_rss.xml',
-    'https://www.foxweather.com/rss-feed'
-  ];
-
-  async function parseRSS(url) {
-    const res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
-    const text = await res.text();
-    const parser = new DOMParser();
-    const xml = parser.parseFromString(text, 'application/xml');
-    return [...xml.querySelectorAll('item')].slice(0, 3).map(item => ({
-      title: item.querySelector('title')?.textContent,
-      link: item.querySelector('link')?.textContent,
-      description: item.querySelector('description')?.textContent || '',
-      thumbnail: item.querySelector('media\\:thumbnail, thumbnail')?.getAttribute('url') ||
-                 item.querySelector('enclosure')?.getAttribute('url') || ''
-    }));
-  }
-
-  const allArticles = [];
-  for (let url of feedUrls) {
-    try {
-      const items = await parseRSS(url);
-      allArticles.push(...items);
-    } catch (err) {
-      console.error(`Error fetching RSS from ${url}`, err);
-    }
-  }
-
-  const articles = allArticles
-    .filter((a, idx, self) => a.title && a.link && idx === self.findIndex(b => b.title === a.title))
-    .slice(0, 5); // Show only 5 articles
-
-  const container = document.getElementById('weather-news');
-  container.innerHTML = '';
-
-  articles.forEach(a => {
-    const card = document.createElement('div');
-    card.className = 'news-card';
-    card.innerHTML = `
-      ${a.thumbnail ? `<img src="${a.thumbnail}" alt="thumbnail">` : ''}
-      <h3><a href="${a.link}" target="_blank" rel="noopener noreferrer">${a.title}</a></h3>
-      <p>${a.description.slice(0, 100)}...</p>
-    `;
-    container.appendChild(card);
-  });
-})();
-</script>
-
-
 <section class="mv-badges">
   <ul>
     <li>Climate Risk Anlysis</li>
@@ -170,6 +75,87 @@
     <a href="/consulting.html" class="mv-card-btn">Learn More</a>
   </article>
 </section>
+
+  <script>
+  const rssFeeds = [
+    "https://www.weather.gov/rss_page_updates.php",
+    "https://rss.accuweather.com/rss/liveweather_rss.asp?metric=0",
+    "https://www.foxweather.com/rss",
+    "https://www.noaa.gov/news/rss.xml"
+  ];
+
+  const proxy = "https://api.allorigins.win/get?url=";
+
+  async function fetchWeatherNews() {
+    const newsContainer = document.getElementById("news-container");
+    newsContainer.innerHTML = "";
+
+    const articles = [];
+
+    for (const feedUrl of rssFeeds) {
+      try {
+        const res = await fetch(proxy + encodeURIComponent(feedUrl));
+        const data = await res.json();
+        const parser = new DOMParser();
+        const xml = parser.parseFromString(data.contents, "text/xml");
+        const items = xml.querySelectorAll("item");
+
+        items.forEach((item, index) => {
+          if (articles.length < 20) {
+            articles.push({
+              title: item.querySelector("title")?.textContent,
+              link: item.querySelector("link")?.textContent,
+              description: item.querySelector("description")?.textContent?.substring(0, 140) + "...",
+              pubDate: item.querySelector("pubDate")?.textContent,
+              thumbnail: item.querySelector("media\\:thumbnail, thumbnail")?.getAttribute("url") || "https://www.weather.gov/themes/custom/nws/images/nws-social-share.png"
+            });
+          }
+        });
+      } catch (err) {
+        console.error("Failed to load feed:", feedUrl, err);
+      }
+    }
+
+    renderArticles(articles.slice(0, 5));
+
+    document.getElementById("more-news-btn").onclick = () => {
+      renderArticles(articles);
+      document.getElementById("more-news-btn").style.display = "none";
+    };
+  }
+
+  function renderArticles(articles) {
+    const container = document.getElementById("news-container");
+    container.innerHTML = "";
+
+    articles.forEach(article => {
+      const div = document.createElement("div");
+      div.style.border = "1px solid #ccc";
+      div.style.borderRadius = "8px";
+      div.style.overflow = "hidden";
+      div.style.backgroundColor = "white";
+      div.style.boxShadow = "0 2px 8px rgba(0,0,0,0.05)";
+      div.style.transition = "transform 0.3s ease";
+
+      div.onmouseover = () => div.style.transform = "scale(1.02)";
+      div.onmouseout = () => div.style.transform = "scale(1)";
+
+      div.innerHTML = `
+        <a href="${article.link}" target="_blank" style="text-decoration: none; color: inherit;">
+          <img src="${article.thumbnail}" alt="thumbnail" style="width:100%; height:160px; object-fit:cover;">
+          <div style="padding: 10px;">
+            <h3 style="font-size: 1em; margin-bottom: 8px; color: #003366;">${article.title}</h3>
+            <p style="font-size: 0.9em; color: #555;">${article.description}</p>
+            <p style="font-size: 0.8em; color: #999;">${new Date(article.pubDate).toLocaleDateString()}</p>
+          </div>
+        </a>
+      `;
+      container.appendChild(div);
+    });
+  }
+
+  fetchWeatherNews();
+</script>
 
 <footer class="mv-footer">
   <p>© <span id="mv-year"></span> MeteoVeritas. All rights reserved.</p>
