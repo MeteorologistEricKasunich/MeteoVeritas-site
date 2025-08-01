@@ -3,173 +3,189 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>MeteoVeritas | Home</title>
+  <title>MeteoVeritas | Trusted Weather Insight</title>
   <link rel="stylesheet" href="/assets/css/styles.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=PT+Sans+Narrow&display=swap" rel="stylesheet">
   <style>
     body {
       margin: 0;
-      font-family: 'PT Sans Narrow', sans-serif;
-      background: linear-gradient(to bottom, #013a63, #468faf, #fca311);
-      color: white;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to bottom, #d6eaf8, #ffffff);
+      color: #222;
     }
+
     header {
-      background-color: #001f3f;
-      padding: 15px 30px;
+      background-color: #003366;
+      color: white;
+      padding: 15px 25px;
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      justify-content: space-between;
     }
+
     header img {
       height: 50px;
     }
+
     nav a {
       color: white;
       text-decoration: none;
-      margin: 0 15px;
-      font-weight: 600;
+      margin-left: 20px;
+      font-weight: bold;
     }
+
     nav a:hover {
       text-decoration: underline;
     }
-    main {
+
+    .main-container {
+      padding: 20px;
       max-width: 1200px;
       margin: auto;
-      padding: 40px 20px;
     }
+
     h1 {
-      font-size: 3em;
-      margin-bottom: 0.5em;
-      color: #ffd700;
+      font-size: 2rem;
+      color: #003366;
     }
-    .section {
-      margin-top: 60px;
-    }
-    .weather-current, .forecast {
+
+    .weather-today {
       display: flex;
+      align-items: center;
+      justify-content: space-between;
       flex-wrap: wrap;
-      gap: 20px;
-      background: rgba(0, 0, 0, 0.4);
-      border-radius: 10px;
+      background-color: #eef6fb;
       padding: 20px;
+      border-radius: 10px;
+      margin-top: 20px;
     }
-    .weather-current div {
-      flex: 1 1 200px;
+
+    .weather-today img {
+      width: 100px;
     }
-    .forecast-card {
-      background: rgba(255, 255, 255, 0.1);
-      padding: 10px;
+
+    .forecast {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      margin-top: 30px;
+    }
+
+    .day-card {
+      flex: 1 1 120px;
+      background-color: #ffffff;
       border-radius: 8px;
+      padding: 10px;
       text-align: center;
-      flex: 1;
+      margin: 5px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
+
     iframe {
       width: 100%;
       height: 500px;
       border: none;
       margin-top: 30px;
-      border-radius: 10px;
+      border-radius: 8px;
     }
+
     footer {
-      background-color: #002b5c;
+      background-color: #003366;
       color: white;
       text-align: center;
       padding: 20px;
+      margin-top: 50px;
     }
-    .mv-btn {
-      background: #ffd700;
-      color: #001f3f;
-      border: none;
-      padding: 12px 18px;
-      font-weight: bold;
-      border-radius: 5px;
-      cursor: pointer;
-      margin-top: 20px;
+
+    .about-us {
+      margin-top: 40px;
+      background-color: #f3f9fe;
+      padding: 20px;
+      border-radius: 8px;
     }
   </style>
 </head>
 <body>
   <header>
-    <a href="/"><img src="/assets/img/mv-logo.svg" alt="MeteoVeritas Logo" /></a>
+    <a href="/"><img src="/assets/img/placeholder-logo.svg" alt="MeteoVeritas Logo"></a>
     <nav>
       <a href="/weather.html">Weather Center</a>
       <a href="/wbgt.html">WBGT Center</a>
       <a href="/historical.html">Research</a>
       <a href="/consulting.html">Consulting</a>
-      <a href="/contact.html">Contact Us</a>
+      <a href="/contact.html">Contact</a>
     </nav>
   </header>
 
-  <main>
-    <h1>Welcome to MeteoVeritas</h1>
-    <p>High-tech, professional-grade weather intelligence—powered by science, driven by accuracy.</p>
-
-    <div id="weather" class="weather-current"></div>
-
-    <div class="section">
-      <h2>7-Day Forecast</h2>
-      <div id="forecast" class="forecast"></div>
+  <div class="main-container">
+    <h1>Live Weather for Your Location</h1>
+    <div class="weather-today" id="current-weather">
+      <p>Loading current conditions...</p>
     </div>
 
-    <div class="section">
-      <h2>Live Radar</h2>
-      <iframe src="https://www.windy.com/-Weather-radar-radar?radar,27.76,-82.64,7,p:off" title="Live Radar via Windy"></iframe>
-    </div>
+    <h2>7-Day Forecast</h2>
+    <div class="forecast" id="forecast-cards"></div>
 
-    <div class="section">
-      <h2>Why Choose MeteoVeritas?</h2>
-      <p>We combine forensic meteorology, AI-powered climate analysis, and expert testimony to deliver trusted, accurate weather insight for legal, construction, public safety, and insurance clients.</p>
-      <a href="/consulting.html"><button class="mv-btn">Learn More</button></a>
+    <h2>Interactive Radar</h2>
+    <iframe src="https://www.windy.com/-Weather-radar-radar?radar,27.951,-82.457,7" allowfullscreen></iframe>
+
+    <div class="about-us">
+      <h2>About MeteoVeritas</h2>
+      <p>MeteoVeritas delivers trusted meteorological insight for public safety, outdoor planning, and professional applications. Founded by expert meteorologist Eric Kasunich, we combine cutting-edge data tools with years of forecasting experience to empower smart, weather-ready decisions.</p>
     </div>
-  </main>
+  </div>
 
   <footer>
-    <p>© <span id="year"></span> MeteoVeritas. All Rights Reserved.</p>
+    &copy; <span id="year"></span> MeteoVeritas | Powered by Open-Meteo, Windy, and NOAA
   </footer>
 
   <script>
     document.getElementById("year").textContent = new Date().getFullYear();
 
     async function getWeather(lat, lon) {
-      const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&daily=temperature_2m_max,temperature_2m_min&timezone=auto`);
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,weathercode&timezone=auto`;
+      const res = await fetch(url);
       const data = await res.json();
-      const current = data.current_weather;
+      const curr = data.current_weather;
       const daily = data.daily;
 
-      const weatherHTML = `
+      const iconMap = {
+        0: "☀️", 1: "🌤️", 2: "⛅", 3: "☁️",
+        45: "🌫️", 48: "🌫️", 51: "🌦️", 53: "🌧️", 55: "🌧️",
+        61: "🌧️", 63: "🌧️", 65: "🌧️", 66: "🌧️",
+        71: "🌨️", 73: "🌨️", 75: "❄️", 95: "⛈️"
+      };
+
+      document.getElementById("current-weather").innerHTML = `
         <div>
-          <h3>Current Weather</h3>
-          <p><strong>Temperature:</strong> ${(current.temperature * 9/5 + 32).toFixed(1)} °F</p>
-          <p><strong>Wind:</strong> ${current.windspeed} km/h</p>
-          <p><strong>Direction:</strong> ${current.winddirection}°</p>
-          <p><strong>Condition:</strong> ${current.weathercode}</p>
+          <h3>${data.timezone}</h3>
+          <p><strong>Temperature:</strong> ${curr.temperature}°F</p>
+          <p><strong>Wind:</strong> ${curr.windspeed} mph</p>
+          <p><strong>Weather:</strong> ${iconMap[curr.weathercode] || "❓"}</p>
         </div>
       `;
-      document.getElementById("weather").innerHTML = weatherHTML;
 
-      const forecastHTML = daily.time.map((date, i) => {
-        const maxF = (daily.temperature_2m_max[i] * 9/5 + 32).toFixed(1);
-        const minF = (daily.temperature_2m_min[i] * 9/5 + 32).toFixed(1);
-        const day = new Date(date).toLocaleDateString('en-US', { weekday: 'short' });
-        return `
-          <div class="forecast-card">
-            <h4>${day}</h4>
-            <p>High: ${maxF}°F</p>
-            <p>Low: ${minF}°F</p>
+      const forecastContainer = document.getElementById("forecast-cards");
+      forecastContainer.innerHTML = "";
+      for (let i = 0; i < daily.time.length; i++) {
+        forecastContainer.innerHTML += `
+          <div class="day-card">
+            <h4>${new Date(daily.time[i]).toLocaleDateString(undefined, { weekday: 'short' })}</h4>
+            <div>${iconMap[daily.weathercode[i]] || "❓"}</div>
+            <p>High: ${daily.temperature_2m_max[i]}°F</p>
+            <p>Low: ${daily.temperature_2m_min[i]}°F</p>
+            <p>Precip: ${daily.precipitation_sum[i]} in</p>
           </div>
         `;
-      }).join('');
-      document.getElementById("forecast").innerHTML = forecastHTML;
+      }
     }
 
     if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(pos => {
-        getWeather(pos.coords.latitude, pos.coords.longitude);
-      }, () => {
-        getWeather(27.76, -82.64); // fallback to Tampa
-      });
+      navigator.geolocation.getCurrentPosition(
+        pos => getWeather(pos.coords.latitude, pos.coords.longitude),
+        () => getWeather(28.02, -82.75) // fallback: Tampa Bay
+      );
     } else {
-      getWeather(27.76, -82.64);
+      getWeather(28.02, -82.75);
     }
   </script>
 </body>
