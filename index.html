@@ -1,264 +1,121 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<title>MeteoVeritas | Actionable Weather Intelligence & Climate Risk</title>
-<meta name="description" content="MeteoVeritas provides data-driven weather consulting, WBGT heat stress tools, forensic meteorology, and live weather data.">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="/assets/css/styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MeteoVeritas – Weather Intelligence</title>
+  <link rel="stylesheet" href="assets/css/styles.css">
 </head>
 <body>
-<header class="mv-header">
-  <a class="mv-logo" href="/"><img src="/assets/img/placeholder-logo.svg" alt="MeteoVeritas logo" width="160" height="48"></a>
-  <nav class="mv-nav">
-    <a href="/weather.html">Weather Center</a>
-    <a href="/wbgt.html">WBGT Center</a>
-    <a href="/historical.html">Historical Weather</a>
-    <a href="/consulting.html">Consulting</a>
-    <a href="/contact.html" class="mv-cta-btn">Request Services</a>
-  </nav>
-</header>
+  <header>
+    <h1>MeteoVeritas</h1>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/wbgt.html">WBGT Center</a>
+      <a href="/historical.html">Research</a>
+      <a href="/consulting.html">Consulting</a>
+      <a href="/contact.html">Contact</a>
+    </nav>
+  </header>
 
-<section class="mv-hero">
-  <h1>Actionable Weather Intelligence &amp; Climate Risk</h1>
-  <p>Driven by data. Grounded in truth.</p>
-  <div class="mv-hero-ctas">
-    <a class="mv-btn-primary" href="/contact.html">Request a Consultation</a>
-    <a class="mv-btn-secondary" href="/weather.html">View Live Weather</a>
-    <a class="mv-btn-secondary" href="/wbgt.html">Get WBGT For My Location</a>
-  </div>
+  <main>
+    <section id="intro">
+      <h2>Your Source for Verified Weather Insight</h2>
+      <p>Scientific. Accurate. Trusted.</p>
+    </section>
 
-<div style="max-width: 900px; margin: 40px auto; text-align: center;">
-  <h2>Live Radar & Weather Layers</h2>
-  <p>Click below for full interactive experience powered by Windy.com:</p>
-  
-  <a href="https://www.windy.com/-Weather-radar-radar?radar,27.991,-82.464,7" target="_blank" style="display:inline-block; padding:12px 20px; background-color:#0077cc; color:white; text-decoration:none; border-radius:6px; font-weight:bold;">
-    Open Full Windy Map
-  </a>
+    <!-- Weather News Section -->
+    <section id="weather-news" style="margin: 40px auto; max-width: 1100px;">
+      <h2 style="font-size: 1.8em; color: #003366; margin-bottom: 20px;">Today’s Weather News</h2>
+      <div id="news-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;"></div>
+      <button id="more-news-btn" class="mv-btn-primary" style="margin-top: 20px;">Get More Weather News</button>
+    </section>
+  </main>
 
-  <iframe 
-    width="100%" 
-    height="500" 
-    src="https://embed.windy.com/embed2.html?lat=27.991&lon=-82.464&zoom=7&overlay=radar" 
-    frameborder="0" 
-    style="margin-top:20px; border-radius:10px; box-shadow:0 0 12px rgba(0,0,0,0.15);"
-    title="Windy Preview"
-  ></iframe>
-</div>
+  <footer>
+    <p>&copy; 2025 MeteoVeritas. All rights reserved.</p>
+  </footer>
 
-<section id="weather-news" style="margin: 40px auto; max-width: 1100px;">
-  <h2 style="font-size: 1.8em; color: #003366; margin-bottom: 20px;">Today’s Weather News</h2>
-  <div id="news-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;"></div>
-  <button id="more-news-btn" class="mv-btn-primary" style="margin-top: 20px;">Get More Weather News</button>
-</section>
-
-  
-  
-</section>
-
-<section class="mv-badges">
-  <ul>
-    <li>Climate Risk Anlysis</li>
-    <li>Aerial Storm Damge Photography</li>
-    <li>Specialized Forecasts</li>
-    <li>Forensic Meteorology</li>
-  </ul>
-</section>
-
-<section class="mv-panels">
-  <article>
-    <h2>Weather Center</h2>
-    <p>Search any U.S. location for current conditions, forecast, radar &amp; satellite.</p>
-    <a href="/weather.html" class="mv-card-btn">Open</a>
-  </article>
-  <article>
-    <h2>WBGT Center</h2>
-    <p>Heat stress risk for athletes, outdoor work &amp; events. Enter a location (coming soon!).</p>
-    <a href="/wbgt.html" class="mv-card-btn">Preview</a>
-  </article>
-  <article>
-    <h2>Consulting &amp; Forensic Services</h2>
-    <p>Expert weather analysis for legal, insurance, real estate &amp; events.</p>
-    <a href="/consulting.html" class="mv-card-btn">Learn More</a>
-  </article>
-</section>
-
+  <!-- Weather News Script -->
   <script>
-  const rssFeeds = [
-    "https://www.weather.gov/rss_page_updates.php",
-    "https://rss.accuweather.com/rss/liveweather_rss.asp?metric=0",
-    "https://www.foxweather.com/rss",
-    "https://www.noaa.gov/news/rss.xml"
-  ];
+    const rssFeeds = [
+      "https://www.weather.gov/rss_page_updates.php",
+      "https://rss.accuweather.com/rss/liveweather_rss.asp?metric=0",
+      "https://www.foxweather.com/rss",
+      "https://www.noaa.gov/news/rss.xml"
+    ];
 
-  const proxy = "https://api.allorigins.win/get?url=";
+    const proxy = "https://api.allorigins.win/get?url=";
 
-  async function fetchWeatherNews() {
-    const newsContainer = document.getElementById("news-container");
-    newsContainer.innerHTML = "";
+    async function fetchWeatherNews() {
+      const newsContainer = document.getElementById("news-container");
+      newsContainer.innerHTML = "";
 
-    const articles = [];
+      const articles = [];
 
-    for (const feedUrl of rssFeeds) {
-      try {
-        const res = await fetch(proxy + encodeURIComponent(feedUrl));
-        const data = await res.json();
-        const parser = new DOMParser();
-        const xml = parser.parseFromString(data.contents, "text/xml");
-        const items = xml.querySelectorAll("item");
+      for (const feedUrl of rssFeeds) {
+        try {
+          const res = await fetch(proxy + encodeURIComponent(feedUrl));
+          const data = await res.json();
+          const parser = new DOMParser();
+          const xml = parser.parseFromString(data.contents, "text/xml");
+          const items = xml.querySelectorAll("item");
 
-        items.forEach((item, index) => {
-          if (articles.length < 20) {
-            articles.push({
-              title: item.querySelector("title")?.textContent,
-              link: item.querySelector("link")?.textContent,
-              description: item.querySelector("description")?.textContent?.substring(0, 140) + "...",
-              pubDate: item.querySelector("pubDate")?.textContent,
-              thumbnail: item.querySelector("media\\:thumbnail, thumbnail")?.getAttribute("url") || "https://www.weather.gov/themes/custom/nws/images/nws-social-share.png"
-            });
-          }
-        });
-      } catch (err) {
-        console.error("Failed to load feed:", feedUrl, err);
+          items.forEach((item) => {
+            if (articles.length < 20) {
+              articles.push({
+                title: item.querySelector("title")?.textContent,
+                link: item.querySelector("link")?.textContent,
+                description: item.querySelector("description")?.textContent?.substring(0, 140) + "...",
+                pubDate: item.querySelector("pubDate")?.textContent,
+                thumbnail: item.querySelector("media\\:thumbnail, thumbnail")?.getAttribute("url") || "https://www.weather.gov/themes/custom/nws/images/nws-social-share.png"
+              });
+            }
+          });
+        } catch (err) {
+          console.error("Failed to load feed:", feedUrl, err);
+        }
       }
+
+      renderArticles(articles.slice(0, 5));
+
+      document.getElementById("more-news-btn").onclick = () => {
+        renderArticles(articles);
+        document.getElementById("more-news-btn").style.display = "none";
+      };
     }
 
-    renderArticles(articles.slice(0, 5));
+    function renderArticles(articles) {
+      const container = document.getElementById("news-container");
+      container.innerHTML = "";
 
-    document.getElementById("more-news-btn").onclick = () => {
-      renderArticles(articles);
-      document.getElementById("more-news-btn").style.display = "none";
-    };
-  }
+      articles.forEach(article => {
+        const div = document.createElement("div");
+        div.style.border = "1px solid #ccc";
+        div.style.borderRadius = "8px";
+        div.style.overflow = "hidden";
+        div.style.backgroundColor = "white";
+        div.style.boxShadow = "0 2px 8px rgba(0,0,0,0.05)";
+        div.style.transition = "transform 0.3s ease";
 
-  function renderArticles(articles) {
-    const container = document.getElementById("news-container");
-    container.innerHTML = "";
+        div.onmouseover = () => div.style.transform = "scale(1.02)";
+        div.onmouseout = () => div.style.transform = "scale(1)";
 
-    articles.forEach(article => {
-      const div = document.createElement("div");
-      div.style.border = "1px solid #ccc";
-      div.style.borderRadius = "8px";
-      div.style.overflow = "hidden";
-      div.style.backgroundColor = "white";
-      div.style.boxShadow = "0 2px 8px rgba(0,0,0,0.05)";
-      div.style.transition = "transform 0.3s ease";
-
-      div.onmouseover = () => div.style.transform = "scale(1.02)";
-      div.onmouseout = () => div.style.transform = "scale(1)";
-
-      div.innerHTML = `
-        <a href="${article.link}" target="_blank" style="text-decoration: none; color: inherit;">
-          <img src="${article.thumbnail}" alt="thumbnail" style="width:100%; height:160px; object-fit:cover;">
-          <div style="padding: 10px;">
-            <h3 style="font-size: 1em; margin-bottom: 8px; color: #003366;">${article.title}</h3>
-            <p style="font-size: 0.9em; color: #555;">${article.description}</p>
-            <p style="font-size: 0.8em; color: #999;">${new Date(article.pubDate).toLocaleDateString()}</p>
-          </div>
-        </a>
-      `;
-      container.appendChild(div);
-    });
-  }
-
-  fetchWeatherNews();
-</script>
-
-<footer class="mv-footer">
-  <p>© <span id="mv-year"></span> MeteoVeritas. All rights reserved.</p>
-</footer>
-
-<!-- Hidden Netlify 'mv-lead' form so quick leads work from any CTA -->
-<form name="mv-lead" method="POST" data-netlify="true" netlify-honeypot="bot-field" hidden>
-  <input type="hidden" name="form-name" value="mv-lead">
-  <p class="hidden"><label>Don’t fill this out: <input name="bot-field"></label></p>
-  <input type="text" name="name" />
-  <input type="email" name="email" />
-  <textarea name="message"></textarea>
-</form>
-
-<script src="/assets/js/main.js"></script>
-  
-<script>
-  const rssFeeds = [
-    "https://www.weather.gov/rss_page_updates.php",
-    "https://rss.accuweather.com/rss/liveweather_rss.asp?metric=0",
-    "https://www.foxweather.com/rss",
-    "https://www.noaa.gov/news/rss.xml"
-  ];
-
-  const proxy = "https://api.allorigins.win/get?url=";
-
-  async function fetchWeatherNews() {
-    const newsContainer = document.getElementById("news-container");
-    newsContainer.innerHTML = "";
-
-    const articles = [];
-
-    for (const feedUrl of rssFeeds) {
-      try {
-        const res = await fetch(proxy + encodeURIComponent(feedUrl));
-        const data = await res.json();
-        const parser = new DOMParser();
-        const xml = parser.parseFromString(data.contents, "text/xml");
-        const items = xml.querySelectorAll("item");
-
-        items.forEach((item, index) => {
-          if (articles.length < 20) {
-            articles.push({
-              title: item.querySelector("title")?.textContent,
-              link: item.querySelector("link")?.textContent,
-              description: item.querySelector("description")?.textContent?.substring(0, 140) + "...",
-              pubDate: item.querySelector("pubDate")?.textContent,
-              thumbnail: item.querySelector("media\\:thumbnail, thumbnail")?.getAttribute("url") || "https://www.weather.gov/themes/custom/nws/images/nws-social-share.png"
-            });
-          }
-        });
-      } catch (err) {
-        console.error("Failed to load feed:", feedUrl, err);
-      }
+        div.innerHTML = `
+          <a href="${article.link}" target="_blank" style="text-decoration: none; color: inherit;">
+            <img src="${article.thumbnail}" alt="thumbnail" style="width:100%; height:160px; object-fit:cover;">
+            <div style="padding: 10px;">
+              <h3 style="font-size: 1em; margin-bottom: 8px; color: #003366;">${article.title}</h3>
+              <p style="font-size: 0.9em; color: #555;">${article.description}</p>
+              <p style="font-size: 0.8em; color: #999;">${new Date(article.pubDate).toLocaleDateString()}</p>
+            </div>
+          </a>
+        `;
+        container.appendChild(div);
+      });
     }
 
-    renderArticles(articles.slice(0, 5));
-
-    document.getElementById("more-news-btn").onclick = () => {
-      renderArticles(articles);
-      document.getElementById("more-news-btn").style.display = "none";
-    };
-  }
-
-  function renderArticles(articles) {
-    const container = document.getElementById("news-container");
-    container.innerHTML = "";
-
-    articles.forEach(article => {
-      const div = document.createElement("div");
-      div.style.border = "1px solid #ccc";
-      div.style.borderRadius = "8px";
-      div.style.overflow = "hidden";
-      div.style.backgroundColor = "white";
-      div.style.boxShadow = "0 2px 8px rgba(0,0,0,0.05)";
-      div.style.transition = "transform 0.3s ease";
-
-      div.onmouseover = () => div.style.transform = "scale(1.02)";
-      div.onmouseout = () => div.style.transform = "scale(1)";
-
-      div.innerHTML = `
-        <a href="${article.link}" target="_blank" style="text-decoration: none; color: inherit;">
-          <img src="${article.thumbnail}" alt="thumbnail" style="width:100%; height:160px; object-fit:cover;">
-          <div style="padding: 10px;">
-            <h3 style="font-size: 1em; margin-bottom: 8px; color: #003366;">${article.title}</h3>
-            <p style="font-size: 0.9em; color: #555;">${article.description}</p>
-            <p style="font-size: 0.8em; color: #999;">${new Date(article.pubDate).toLocaleDateString()}</p>
-          </div>
-        </a>
-      `;
-      container.appendChild(div);
-    });
-  }
-
-  fetchWeatherNews();
-</script>
-
+    fetchWeatherNews();
+  </script>
 </body>
 </html>
