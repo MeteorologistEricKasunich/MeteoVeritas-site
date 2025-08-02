@@ -76,13 +76,6 @@
   </article>
 </section>
 
-<!-- Weather News Section -->
-<section id="weather-news" style="margin: 40px auto; max-width: 1100px;">
-  <h2 style="font-size: 1.8em; color: #003366; margin-bottom: 20px;">Today’s Weather News</h2>
-  <div id="news-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;"></div>
-  <button id="more-news-btn" style="margin-top: 20px;">Get More Weather News</button>
-</section>
-
 
 <footer class="mv-footer">
   <p>© <span id="mv-year"></span> MeteoVeritas. All rights reserved.</p>
@@ -99,38 +92,28 @@
 
 <script src="/assets/js/main.js"></script>
 
-<script>
-const rssFeeds = [
-  "https://www.weather.gov/rss_page_updates.php",
-  "https://www.foxweather.com/rss",
-  "https://rss.accuweather.com/rss/liveweather_rss.asp?metric=0",
-  "https://www.noaa.gov/news/rss.xml"
-];
+  <section id="weather-news" style="padding: 30px;">
+  <h2 style="font-size: 1.8em; color: #003366; margin-bottom: 20px;">Today’s Weather News</h2>
+  <div id="news-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;"></div>
+  <button id="more-news-btn" style="margin-top: 20px;">Get More Weather News</button>
+</section>
 
+<script>
+const API_KEY = 'e78decb724a66acfd419bb6b9365518e'; // Replace with your real API key from https://gnews.io
 const newsContainer = document.getElementById("news-container");
-const allArticles = [];
+let allArticles = [];
 
 async function loadWeatherNews() {
-  for (const feed of rssFeeds) {
-    const apiURL = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feed)}`;
-    try {
-      const res = await fetch(apiURL);
-      const data = await res.json();
-      data.items.slice(0, 5).forEach(item => {
-        allArticles.push({
-          title: item.title,
-          link: item.link,
-          thumbnail: item.thumbnail || "https://www.weather.gov/themes/custom/nws/images/nws-social-share.png",
-          pubDate: new Date(item.pubDate).toLocaleDateString(),
-          description: item.description?.substring(0, 120) + "..."
-        });
-      });
-    } catch (e) {
-      console.error("Failed to load:", feed, e);
-    }
-  }
+  try {
+    const res = await fetch(`https://gnews.io/api/v4/search?q=weather&lang=en&country=us&max=20&apikey=${API_KEY}`);
+    const data = await res.json();
+    allArticles = data.articles;
 
-  displayArticles(allArticles.slice(0, 5)); // Display first 5
+    displayArticles(allArticles.slice(0, 5));
+  } catch (err) {
+    console.error("Failed to load weather news:", err);
+    newsContainer.innerHTML = "<p style='color:red;'>Unable to load weather news. Please try again later.</p>";
+  }
 }
 
 function displayArticles(articles) {
@@ -143,12 +126,12 @@ function displayArticles(articles) {
     card.style.background = "#fff";
     card.style.boxShadow = "0 2px 5px rgba(0,0,0,0.1)";
     card.innerHTML = `
-      <a href="${article.link}" target="_blank" style="text-decoration: none; color: inherit;">
-        <img src="${article.thumbnail}" alt="thumbnail" style="width:100%; height:160px; object-fit:cover;">
+      <a href="${article.url}" target="_blank" style="text-decoration: none; color: inherit;">
+        <img src="${article.image}" alt="thumbnail" style="width:100%; height:160px; object-fit:cover;">
         <div style="padding: 12px;">
           <h3 style="font-size: 1em; color:#003366; margin-bottom: 8px;">${article.title}</h3>
           <p style="font-size: 0.9em; color:#555;">${article.description}</p>
-          <p style="font-size: 0.8em; color:#888;">${article.pubDate}</p>
+          <p style="font-size: 0.8em; color:#888;">${new Date(article.publishedAt).toLocaleDateString()}</p>
         </div>
       </a>
     `;
