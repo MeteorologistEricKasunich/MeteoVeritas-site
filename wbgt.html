@@ -143,6 +143,65 @@
   title="NOAA Excessive HeatRisk Map"
   loading="lazy"
 ></iframe>
+
+    <!-- Cooling Centers Section -->
+<section id="cooling-centers" style="padding: 40px 20px; background: #f0f8ff; border-top: 2px solid #ccc;">
+  <h2 style="text-align:center; font-size: 2em; margin-bottom: 20px;">🧊 Cooling Centers Near You</h2>
+  
+  <input type="text" id="coolingSearch" placeholder="Search by city or ZIP code..." 
+         style="display:block; margin: 0 auto 20px auto; padding:10px; width:300px; font-size:16px; border-radius:5px; border:1px solid #ccc;">
+
+  <div id="coolingResults" style="display:flex; flex-direction:column; gap:15px; max-width:700px; margin:0 auto;"></div>
+</section>
+
+<script>
+// Sample data — replace or expand with live data later
+const coolingCenters = [
+  { name: "Dunedin Community Center", city: "Dunedin", zip: "34698", address: "1920 Pinehurst Rd", hours: "9 AM – 6 PM", notes: "Pets allowed with leash." },
+  { name: "St. Pete Main Library", city: "St. Petersburg", zip: "33701", address: "3745 9th Ave N", hours: "10 AM – 5 PM", notes: "Water provided." },
+  { name: "Clearwater Cooling Shelter", city: "Clearwater", zip: "33755", address: "1120 Drew St", hours: "8 AM – 7 PM", notes: "Wheelchair accessible." }
+];
+
+const searchInput = document.getElementById("coolingSearch");
+const resultsDiv = document.getElementById("coolingResults");
+
+function displayCenters(filter = "") {
+  resultsDiv.innerHTML = "";
+
+  const filtered = coolingCenters.filter(center =>
+    center.city.toLowerCase().includes(filter.toLowerCase()) ||
+    center.zip.includes(filter)
+  );
+
+  if (filtered.length === 0) {
+    resultsDiv.innerHTML = "<p style='text-align:center;'>No cooling centers found for that location.</p>";
+    return;
+  }
+
+  filtered.forEach(center => {
+    const div = document.createElement("div");
+    div.style.border = "1px solid #ddd";
+    div.style.padding = "15px";
+    div.style.borderRadius = "8px";
+    div.style.background = "#fff";
+    div.style.boxShadow = "0 2px 5px rgba(0,0,0,0.1)";
+    div.innerHTML = `
+      <h3 style="margin-top:0">${center.name}</h3>
+      <p><strong>Address:</strong> ${center.address}</p>
+      <p><strong>Hours:</strong> ${center.hours}</p>
+      <p><strong>Notes:</strong> ${center.notes}</p>
+    `;
+    resultsDiv.appendChild(div);
+  });
+}
+
+searchInput.addEventListener("input", (e) => {
+  displayCenters(e.target.value);
+});
+
+displayCenters(); // initial render
+</script>
+
     
   </main>
 
