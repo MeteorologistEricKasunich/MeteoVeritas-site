@@ -214,101 +214,93 @@ displayCenters(); // initial render
   </script>
   <script src="/assets/js/wbgt-tool.js"></script>
 
-<!-- AI Chatbot: Health & Activity Advisor -->
-<div id="chatbot-toggle" onclick="toggleChatbot()">💬 Need WBGT Advice?</div>
+<!-- AI Chatbot: Personalized WBGT Advice (Always Visible) -->
 <div id="chatbot-container">
-  <div id="chatbot-header">Health & Activity Advisor</div>
-  <div id="chatbot-messages">
-    <div class="bot-message">Hi! I can help you understand today’s WBGT levels and recommend safe activity limits. Ask me anything!</div>
+  <div id="chatbot-header">
+    ☀️ Get Your Free Personalized WBGT Advice
   </div>
-  <input type="text" id="chatbot-input" placeholder="Type your question..." onkeydown="if(event.key === 'Enter') sendMessage()">
+  <div id="chatbot-messages">
+    <div class="bot-message">👋 Hi there! I'm your WBGT Assistant. Ask me anything about heat risk, safety tips, hydration, or activity planning.</div>
+  </div>
+  <input type="text" id="chatbot-input" placeholder="Ask your question..." onkeydown="if(event.key === 'Enter') sendMessage()">
 </div>
 
 <style>
-  #chatbot-toggle {
+  #chatbot-container {
     position: fixed;
     bottom: 20px;
     right: 20px;
-    background: #0057B7;
-    color: white;
-    padding: 10px 15px;
-    border-radius: 30px;
-    cursor: pointer;
-    font-weight: bold;
-    z-index: 1000;
-  }
-
-  #chatbot-container {
-    display: none;
-    position: fixed;
-    bottom: 80px;
-    right: 20px;
-    width: 300px;
-    max-height: 400px;
-    background: #f4f4f4;
-    border: 2px solid #0057B7;
-    border-radius: 10px;
-    overflow: hidden;
-    z-index: 1000;
-    box-shadow: 0 0 10px rgba(0,0,0,0.2);
-    font-family: Arial, sans-serif;
+    width: 320px;
+    max-height: 450px;
+    background: linear-gradient(to bottom right, #e0f7fa, #ffebee);
+    border: 2px solid #f06292;
+    border-radius: 12px;
+    box-shadow: 0 0 12px rgba(0, 0, 0, 0.3);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    font-family: 'Segoe UI', sans-serif;
   }
 
   #chatbot-header {
-    background: #0057B7;
+    background: #f06292;
     color: white;
-    padding: 10px;
+    padding: 12px;
     font-weight: bold;
+    font-size: 15px;
     text-align: center;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
   }
 
   #chatbot-messages {
     padding: 10px;
-    height: 250px;
+    flex-grow: 1;
     overflow-y: auto;
+    background-color: rgba(255,255,255,0.8);
     font-size: 14px;
   }
 
   .bot-message, .user-message {
-    margin-bottom: 10px;
-    padding: 8px 10px;
-    border-radius: 10px;
+    margin-bottom: 8px;
+    padding: 8px 12px;
+    border-radius: 12px;
     max-width: 90%;
+    line-height: 1.4;
   }
 
   .bot-message {
-    background: #e2e2e2;
+    background: #ffe0e6;
+    color: #333;
     align-self: flex-start;
   }
 
   .user-message {
-    background: #c2e0ff;
+    background: #bbdefb;
+    color: #000;
     align-self: flex-end;
     text-align: right;
   }
 
   #chatbot-input {
-    width: 100%;
-    box-sizing: border-box;
-    padding: 10px;
     border: none;
     border-top: 1px solid #ccc;
+    padding: 10px;
     font-size: 14px;
+    outline: none;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
   }
 </style>
 
 <script>
-  function toggleChatbot() {
-    const chat = document.getElementById('chatbot-container');
-    chat.style.display = (chat.style.display === 'none' || chat.style.display === '') ? 'block' : 'none';
-  }
-
   function sendMessage() {
     const input = document.getElementById('chatbot-input');
     const message = input.value.trim();
     if (!message) return;
 
     const msgContainer = document.getElementById('chatbot-messages');
+
     const userMsg = document.createElement('div');
     userMsg.className = 'user-message';
     userMsg.textContent = message;
@@ -316,7 +308,7 @@ displayCenters(); // initial render
 
     const botReply = document.createElement('div');
     botReply.className = 'bot-message';
-    botReply.textContent = "I'm still learning! Soon I'll give you personalized safety advice for your location and WBGT risk level.";
+    botReply.textContent = "Thanks! I'm working on a detailed reply. Soon, I'll provide tailored health guidance based on current WBGT and your activity.";
     msgContainer.appendChild(botReply);
 
     msgContainer.scrollTop = msgContainer.scrollHeight;
