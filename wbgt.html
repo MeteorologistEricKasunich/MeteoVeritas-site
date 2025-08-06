@@ -314,6 +314,50 @@ displayCenters(); // initial render
     msgContainer.scrollTop = msgContainer.scrollHeight;
     input.value = '';
   }
+
+  <script>
+document.getElementById('send-button').addEventListener('click', async () => {
+  const userInput = document.getElementById('chat-input').value;
+  const chatBox = document.getElementById('chat-box');
+
+  if (!userInput.trim()) return;
+
+  // Display user message
+  const userMessage = document.createElement('div');
+  userMessage.className = 'user-message';
+  userMessage.textContent = userInput;
+  chatBox.appendChild(userMessage);
+
+  // Clear input
+  document.getElementById('chat-input').value = '';
+
+  try {
+    const response = await fetch('http://localhost:3000/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: userInput })
+    });
+
+    const data = await response.json();
+
+    // Display bot reply
+    const botMessage = document.createElement('div');
+    botMessage.className = 'bot-message';
+    botMessage.textContent = data.reply;
+    chatBox.appendChild(botMessage);
+
+    // Scroll to bottom
+    chatBox.scrollTop = chatBox.scrollHeight;
+  } catch (error) {
+    console.error('Error:', error);
+    const errorMessage = document.createElement('div');
+    errorMessage.className = 'bot-message';
+    errorMessage.textContent = '⚠️ Error talking to server.';
+    chatBox.appendChild(errorMessage);
+  }
+});
+</script>
+
 </script>
  
 </body>
